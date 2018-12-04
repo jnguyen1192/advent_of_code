@@ -1,12 +1,13 @@
 import unittest
 from datetime import datetime
+from parse import parse
 
 
 def input_file():
     file = open('input', 'r')
-    lines = [line.rstrip('\n') for line in file]
+    text = file.read()
     file.close()
-    return lines
+    return text
 
 
 def output_file():
@@ -21,14 +22,28 @@ class Garde:
         self.id = id
         self.current_date = current_date
         self.time = 0
+        self.max_sleep = 0
+        self.day = [0] * 60
 
     def addDateFalls(self, date):
-        self.time += int(abs(self.current_date - date).total_seconds() / 60.0)
-        print(self.id, " ", self.time)
         self.current_date = date
 
     def addDateWakes(self, date):
+        self.time += int(abs(self.current_date - date).total_seconds() / 60.0)
+        if int(abs(self.current_date - date).total_seconds() / 60.0) > self.max_sleep:
+            self.max_sleep = int(abs(self.current_date - date).total_seconds() / 60.0)
+        for i in range(self.current_date.minute, date.minute):
+            self.day[i] += 1
         self.current_date = date
+
+    def get_best_minute(self):
+        max_value = 0
+        max_index = 0
+        for index, value in enumerate(self.day):
+            if value > max_value:
+                max_value = value
+                max_index = index
+        return max_index
 
 
 def check_guard_exist(curr_guard_id, gardes):
@@ -44,39 +59,38 @@ def get_current_garde(curr_garde_id, gardes):
             return i
 
 
-def day_4_part_1(lines):
+def day_4_part_1(text):
     gardes = []
     falls = 0
     id_shift_most_recently = []
+    # sort list
+    raw_events = sorted(tuple(parse("[{:d}-{:d}-{:d} {:d}:{:d}] {}", l)) for l in text.split('\n')) # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
     # a chaque fois que t'as un nouveau garde tu l'ajoute a la liste avec sa duree
-    for line in lines:
-        date = datetime.strptime(line.split(']')[0][1:], '%Y-%m-%d %H:%M')
+    for raw in raw_events:
+        date = datetime.strptime(str(raw[0])+"/"+str(raw[1])+"/"+str(raw[2])+"-"+str(raw[3]) + ":" + str(raw[4]), '%Y/%m/%d-%H:%M')
         # case id_guard
-        if line.split(' ')[2][:5] == "Guard":
-            curr_garde_id = int(line.split(' ')[3][1:])
+        if str(raw[5])[:5] == "Guard":
+            curr_garde_id = parse('Guard #{:d} begins shift', raw[5])[0]
             # verifie si  le guard n existe pas
             if check_guard_exist(curr_garde_id, gardes):
                 # case garde existe
-                # recupere l objet concerne
-                num_garde_list = get_current_garde(curr_garde_id, gardes)
-                # change sa date courante avec add wake
-                gardes[num_garde_list].addDateWakes(date)
+                # stack la pile
                 id_shift_most_recently.insert(0, curr_garde_id)
             else:
                 # ajoute un nouveau garde dans la liste de gardes
                 gardes.append(Garde(curr_garde_id, date))
                 id_shift_most_recently.insert(0, curr_garde_id)
-        #print(line.split(' ')[2][:5])
-        if line.split(' ')[2][:5] == "falls":
+
+        if str(raw[5])[:5] == "falls":
             # case falls
             gardes[get_current_garde(id_shift_most_recently[falls], gardes)].addDateFalls(date)
-            falls += 1
-        if line.split(' ')[2][:5] == "wakes":
-            # case wakes
             falls -= 1
-            print(falls)
-            print(id_shift_most_recently)
+        if str(raw[5])[:5] == "wakes":
+            # case wakes
+            falls += 1
             gardes[get_current_garde(id_shift_most_recently[falls], gardes)].addDateWakes(date)
+
+    # sum for each id the time guard not asleep
     # check best current garde
     best_id = 0
     best_time = 0
@@ -84,16 +98,16 @@ def day_4_part_1(lines):
         if g.time > best_time:
             best_id = g.id
             best_time = g.time
-    # sum for each id the time guard not asleep
-    return best_id * best_time
+            best_minute = g.get_best_minute()
+    return best_id * best_minute
 
 
 class TestDay4part1(unittest.TestCase):
 
     def test_day_4_part_1(self):
-        lines = input_file()
+        text = input_file()
         #res = output_file()
-        pred = day_4_part_1(lines)
+        pred = day_4_part_1(text)
         print(pred)
         #assert(pred == res[0])
 
