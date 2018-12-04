@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 
+# With N Big ?
 
 class digit_code:
     def __init__(self):

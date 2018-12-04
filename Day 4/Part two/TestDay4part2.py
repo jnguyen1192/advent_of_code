@@ -4,6 +4,7 @@ from parse import parse
 
 
 def input_file():
+    # return the input file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -11,32 +12,33 @@ def input_file():
 
 
 def output_file():
+    # return the output file in a string
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
     return res
 
 
-class Garde:
+class Guard:
+    # The guard with his timers
     def __init__(self, id, current_date):
         self.id = id
         self.current_date = current_date
         self.time = 0
-        self.max_sleep = 0
+        # init each minute by zero between midnight and one hour
         self.day = [0] * 60
 
-    def addDateFalls(self, date):
+    def set_current_date(self, date):
         self.current_date = date
 
-    def addDateWakes(self, date):
+    def awake_process(self, date):
+        # add to the timer for sleeping
         self.time += int(abs(self.current_date - date).total_seconds() / 60.0)
-        if int(abs(self.current_date - date).total_seconds() / 60.0) > self.max_sleep:
-            self.max_sleep = int(abs(self.current_date - date).total_seconds() / 60.0)
-        for i in range(self.current_date.minute, date.minute):
-            self.day[i] += 1
-        self.current_date = date
+        self.increment_minutes(self.current_date.minute, date.minute)
+        self.set_current_date(date)
 
     def get_best_minute(self):
+        # get the minute which the guard will probably sleep
         max_value = 0
         max_index = 0
         for index, value in enumerate(self.day):
@@ -46,77 +48,101 @@ class Garde:
         return max_index
 
     def get_best_value(self):
+        # get the value which the guard will probably sleep
         max_value = 0
         for index, value in enumerate(self.day):
             if value > max_value:
                 max_value = value
         return max_value
 
+    def increment_minutes(self, start_minute, end_minute):
+        # increment minutes on our list
+        for i in range(start_minute, end_minute):
+            self.day[i] += 1
 
-def check_guard_exist(curr_guard_id, gardes):
-    for g in gardes:
+    def get_super_id(self):
+        return self.id * self.get_best_minute()
+
+
+def check_guard_exist(curr_guard_id, guards):
+    # return true if the guard was found on the list of guards
+    for g in guards:
         if g.id == curr_guard_id:
             return True
     return False
 
 
-def get_current_garde(curr_garde_id, gardes):
-    for i in range(len(gardes)):
-        if curr_garde_id == gardes[i].id:
+def get_current_garde(curr_guard_id, guards):
+    # return the guard in the list using id
+    for i in range(len(guards)):
+        if curr_guard_id == guards[i].id:
             return i
 
 
-def day_4_part_2(text):
-    gardes = []
+def get_best_constant_guard(guards):
+    # return best constant guard
+    best_value = 0
+    best_guard = 0
+    for g in guards:
+        if g.get_best_value() > best_value:
+            best_value = g.get_best_value()
+            best_guard = g
+    return best_guard
+
+
+def create_guards(raw_events):
+    # init
+    guards = []
     falls = 0
     id_shift_most_recently = []
-    # sort list
-    raw_events = sorted(tuple(parse("[{:d}-{:d}-{:d} {:d}:{:d}] {}", l)) for l in text.split('\n')) # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
-    # a chaque fois que t'as un nouveau garde tu l'ajoute a la liste avec sa duree
     for raw in raw_events:
         date = datetime.strptime(str(raw[0])+"/"+str(raw[1])+"/"+str(raw[2])+"-"+str(raw[3]) + ":" + str(raw[4]), '%Y/%m/%d-%H:%M')
         # case id_guard
         if str(raw[5])[:5] == "Guard":
             curr_garde_id = parse('Guard #{:d} begins shift', raw[5])[0]
             # verifie si  le guard n existe pas
-            if check_guard_exist(curr_garde_id, gardes):
+            if check_guard_exist(curr_garde_id, guards):
                 # case garde existe
                 # stack la pile
                 id_shift_most_recently.insert(0, curr_garde_id)
             else:
                 # ajoute un nouveau garde dans la liste de gardes
-                gardes.append(Garde(curr_garde_id, date))
+                guards.append(Guard(curr_garde_id, date))
+                # stack la pile
                 id_shift_most_recently.insert(0, curr_garde_id)
 
         if str(raw[5])[:5] == "falls":
             # case falls
-            gardes[get_current_garde(id_shift_most_recently[falls], gardes)].addDateFalls(date)
+            guards[get_current_garde(id_shift_most_recently[falls], guards)].set_current_date(date)
+            # destack la pile
             falls -= 1
         if str(raw[5])[:5] == "wakes":
             # case wakes
+            # stack la pile
             falls += 1
-            gardes[get_current_garde(id_shift_most_recently[falls], gardes)].addDateWakes(date)
+            guards[get_current_garde(id_shift_most_recently[falls], guards)].awake_process(date)
+        return guards
 
+
+def day_4_part_2(text):
+    # sort list
+    raw_events = sorted(tuple(parse("[{:d}-{:d}-{:d} {:d}:{:d}] {}", l)) for l in text.split('\n')) # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
+    # a chaque fois que t'as un nouveau garde tu l'ajoute a la liste avec sa duree
+    guards = create_guards(raw_events)
     # check best constant garde
-    best_id = 0
-    best_minute = 0
-    best_value = 0
-    for g in gardes:
-        if g.get_best_value() > best_value:
-            best_id = g.id
-            best_value = g.get_best_value()
-            best_minute = g.get_best_minute()
-    return best_id * best_minute
+    best_contant_guard = get_best_constant_guard(guards)
+    # multiply to obtain the result
+    best_guard_id_by_minute = best_contant_guard.get_super_id()
+    return str(best_guard_id_by_minute)
 
 
 class TestDay4part2(unittest.TestCase):
 
     def test_day_4_part_2(self):
         lines = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_4_part_2(lines)
-        print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':

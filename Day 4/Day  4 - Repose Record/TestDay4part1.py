@@ -53,6 +53,9 @@ class Guard:
         for i in range(start_minute, end_minute):
             self.day[i] += 1
 
+    def get_super_id(self):
+        return self.id * self.get_best_minute()
+
 
 def check_guard_exist(curr_guard_id, guards):
     # return true if the guard was found on the list of guards
@@ -62,7 +65,7 @@ def check_guard_exist(curr_guard_id, guards):
     return False
 
 
-def get_current_garde(curr_guard_id, guards):
+def get_current_guard(curr_guard_id, guards):
     # return the guard in the list using id
     for i in range(len(guards)):
         if curr_guard_id == guards[i].id:
@@ -70,7 +73,7 @@ def get_current_garde(curr_guard_id, guards):
 
 
 def get_best_sleeping_guard(guards):
-    # returb best sleeping guard
+    # return best sleeping guard
     best_time = 0
     best_guard = 0
     for g in guards:
@@ -80,44 +83,49 @@ def get_best_sleeping_guard(guards):
     return best_guard
 
 
-def day_4_part_1(text):
+def create_guards(raw_events):
     # init
-    gardes = []
+    guards = []
     falls = 0
     id_shift_most_recently = []
-    # sort list
-    raw_events = sorted(tuple(parse("[{:d}-{:d}-{:d} {:d}:{:d}] {}", l)) for l in text.split('\n'))  # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
-    # a chaque fois que t'as un nouveau garde tu l'ajoute a la liste avec sa duree
     for raw in raw_events:
         date = datetime.strptime(str(raw[0])+"/"+str(raw[1])+"/"+str(raw[2])+"-"+str(raw[3]) + ":" + str(raw[4]), '%Y/%m/%d-%H:%M')
         # case id_guard
         if str(raw[5])[:5] == "Guard":
             curr_garde_id = parse('Guard #{:d} begins shift', raw[5])[0]
             # verifie si  le guard n existe pas
-            if check_guard_exist(curr_garde_id, gardes):
+            if check_guard_exist(curr_garde_id, guards):
                 # case garde existe
                 # stack la pile
                 id_shift_most_recently.insert(0, curr_garde_id)
             else:
                 # ajoute un nouveau garde dans la liste de gardes
-                gardes.append(Guard(curr_garde_id, date))
+                guards.append(Guard(curr_garde_id, date))
                 # stack la pile
                 id_shift_most_recently.insert(0, curr_garde_id)
 
         if str(raw[5])[:5] == "falls":
             # case falls
-            gardes[get_current_garde(id_shift_most_recently[falls], gardes)].set_current_date(date)
+            guards[get_current_guard(id_shift_most_recently[falls], guards)].set_current_date(date)
             # destack la pile
             falls -= 1
         if str(raw[5])[:5] == "wakes":
             # case wakes
             # stack la pile
             falls += 1
-            gardes[get_current_garde(id_shift_most_recently[falls], gardes)].awake_process(date)
+            guards[get_current_guard(id_shift_most_recently[falls], guards)].awake_process(date)
+    return guards
+
+
+def day_4_part_1(text):
+    # sort list
+    raw_events = sorted(tuple(parse("[{:d}-{:d}-{:d} {:d}:{:d}] {}", l)) for l in text.split('\n'))  # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
+    # a chaque fois que t'as un nouveau garde tu l'ajoute a la liste avec sa duree
+    guards = create_guards(raw_events)
     # check best current garde
-    best_guard_sleeping = get_best_sleeping_guard(gardes)
+    best_guard_sleeping = get_best_sleeping_guard(guards)
     # multiply to obtain the result
-    best_guard_id_by_minute = best_guard_sleeping.id * best_guard_sleeping.get_best_minute()
+    best_guard_id_by_minute = best_guard_sleeping.get_super_id()
     return str(best_guard_id_by_minute)
 
 
