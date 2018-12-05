@@ -30,16 +30,16 @@ class Polymer:
 
     # only couple with same type and opposite are removed
     def update_polymer(self, new_polymer, x, X):
-        #print(self.polymer)
+        # return the transformed polymer
+        # delete the couple with oposite polarity
         if self.is_same_type_opposite_polarity(new_polymer, x, X):
             del new_polymer[x]
             del new_polymer[x]
-            #self.polymer = self.polymer[:x] + self.polymer[X:]
-            #self.polymer = self.polymer[:x] + self.polymer[X:]
             return -2
         return 0
 
     def update_all_polymer(self, new_polymer):
+        # return all the transformed polymer
         # manage current position
         j = 0
         # except the last character
@@ -50,21 +50,28 @@ class Polymer:
         return new_polymer
 
     def get_new_polymer(self, new_polymer):
+        # return the polymer as a string
         new_polymer = self.update_all_polymer(list(new_polymer))
         return ''.join(new_polymer)
 
     def get_new_polymer_by_removing_all_by_char(self, char):
+        # return the transformed polymer
+        # remove the specific char on the polymer
         polymer_removed_by_char = "".join(self.polymer)
         polymer_removed_by_char = polymer_removed_by_char.replace(char.lower(), "")
         polymer_removed_by_char = polymer_removed_by_char.replace(char.upper(), "")
-        #print(polymer_removed_by_char)
         return polymer_removed_by_char
 
     def get_best_new_polymer_by_removing_all(self):
+        # return the less length polymer
         min = len(self.polymer) + 1
+        # browse through alphabetic
         for char in "abcdefghijklmnopqrstuvwxyz":
+            # transform the polymer
             new_polymer = self.get_new_polymer_by_removing_all_by_char(char)
+            # get the length of the new polymer
             tmp = len(self.get_new_polymer(new_polymer))
+            # keep the less length
             if tmp < min:
                 min = tmp
         return min
@@ -72,20 +79,20 @@ class Polymer:
 
 def day_5_part_2(text):
     input_polymer = text.split('\n')[0]
-    # TODO process
+    # create the polymer
     polymer = Polymer(input_polymer)
+    # get the less transformed polymer length
     min_polymer_length = polymer.get_best_new_polymer_by_removing_all()
-    return min_polymer_length
+    return str(min_polymer_length)
 
 
 class TestDay5part2(unittest.TestCase):
 
     def test_day_5_part_2(self):
         text = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_5_part_2(text)
-        print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':

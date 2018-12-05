@@ -18,15 +18,8 @@ def output_file():
     return res
 
 
-def write_in__res_file(text):
-    # read line of output file
-    file = open("res", "w")
-    file.write(text)
-    file.close()
-
-
 class Polymer:
-    # the polymer is represented as a string
+    # the polymer is represented as a lisr
     def __init__(self, polymer):
         self.polymer = list(polymer)
 
@@ -38,12 +31,10 @@ class Polymer:
 
     # only couple with same type and opposite are removed
     def update_polymer(self, x, X):
-        #print(self.polymer)
+        # delete the couple with oposite polarity
         if self.is_same_type_opposite_polarity(x, X):
             del self.polymer[x]
             del self.polymer[x]
-            #self.polymer = self.polymer[:x] + self.polymer[X:]
-            #self.polymer = self.polymer[:x] + self.polymer[X:]
             return -2
         return 0
 
@@ -57,30 +48,27 @@ class Polymer:
             j = j + 1 + i
 
     def get_new_polymer(self):
+        # return the polymer as a string
         self.update_all_polymer()
         return ''.join(self.polymer)
 
 
 def day_5_part_1(text):
-    # TODO input
     input_polymer = text.split('\n')[0]
-    # TODO process
+    # create the polymer
     polymer = Polymer(input_polymer)
+    # transform the polymer
     new_polymer = polymer.get_new_polymer()
-    return new_polymer
+    return str(len(new_polymer))
 
 
 class TestDay5part1(unittest.TestCase):
 
     def test_day_5_part_1(self):
         text = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_5_part_1(text)
-
-        write_in__res_file(pred)
-        print((len(pred)))
-        #print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':
