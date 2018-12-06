@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-from pprint import pprint
 
 
 def input_file():
@@ -38,10 +37,9 @@ def get_nearest_point(x, y, areas):
     # each distances to case dot
     distances = []
     nearest_to_other_points = []
-    #alpha = "abcdefghijklmnopqrstuvwxyz."
     for index, area in enumerate(areas):
         d = area.get_manhattan_distance(x, y)
-        #print(alpha[index].upper(), " ", d)
+        # if it is the same point return the point
         if d == 0.0:
             return index
         distances.append(d)
@@ -78,6 +76,7 @@ def pretty_print(areas, grid):
 
 
 def day_6_part_1(lines):
+    # get_areas_and_dimension
     areas = []
     maxx, maxy = (0, 0)
     for line in lines:
@@ -87,9 +86,14 @@ def day_6_part_1(lines):
             maxx = x
         if maxy < y:
             maxy = y
+    factor_to_finite = 20
+    # add area for a special grid
+    grid = np.zeros((maxy*factor_to_finite, maxx*factor_to_finite), dtype=int)
+    # set areas coordonate before add them
+    for area in areas:
+        area.x = area.x + int((maxx*factor_to_finite)/2)
+        area.y = area.y + int((maxy*factor_to_finite)/2)
 
-    # print with the letter
-    grid = np.zeros((maxy + 2, maxx + 2), dtype=int)
     # pour chaque cellule qui valent 0 faire un calcul pour definir quel chiffre est le plus proche
     # s il y a egalite mettre un point soit 0
     for y in range(grid.shape[0]):
