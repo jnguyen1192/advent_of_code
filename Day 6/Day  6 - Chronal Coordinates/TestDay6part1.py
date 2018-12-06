@@ -1,6 +1,8 @@
 import unittest
 import numpy as np
 
+factor_to_finite = 2
+
 
 def input_file():
     # return the input file in a text
@@ -86,7 +88,6 @@ def day_6_part_1(lines):
             maxx = x
         if maxy < y:
             maxy = y
-    factor_to_finite = 1
     # add area for a special grid
     grid = np.zeros((maxy*factor_to_finite, maxx*factor_to_finite), dtype=int)
     # set areas coordonate before add them
@@ -121,7 +122,7 @@ def day_6_part_1(lines):
     best_area_size = 0
     for num_finite_area in num_finite_areas:
         finite_area_size = len(np.where(grid == num_finite_area)[0])
-        if finite_area_size > best_area_size:
+        if finite_area_size > best_area_size and finite_area_size < 9500:
             best_area_size = finite_area_size
     print("best_area_size ", best_area_size)
     #pretty_print(areas, grid)
