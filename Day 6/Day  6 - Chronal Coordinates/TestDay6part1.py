@@ -66,27 +66,8 @@ def get_nearest_point(x, y, areas):
     return nearest_to_other_points[-1]
 
 
-def pretty_print(areas, grid):
-    # for a pretty print
-    alpha = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-             "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
-             "w", "x", "y", "z", "aa", "bb", "cc", "dd", "ee", "ff",
-             "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo",
-             "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx",
-             "yy", "zz", "."]
-    # grid alpha
-    grid_char = np.chararray(grid.shape, unicode=True)
-    for y in range(grid.shape[0]):
-        for x in range(grid.shape[1]):
-            grid_char[y][x] = alpha[int(grid[y][x])] #alpha[int(grid[y][x])]
-
-    # points on grid
-    for index, area in enumerate(areas):
-        grid_char[area.y][area.x] = alpha[index].upper()
-    print(grid_char)
-
-
 def normalize_areas(maxx, maxy, factor_to_finite, areas):
+    # change the area coordonate following the factor to finite area
     for area in areas:
         area.x = area.x + int((maxx*factor_to_finite)/2)
         area.y = area.y + int((maxy*factor_to_finite)/2)
@@ -126,7 +107,7 @@ def count_number_of_n_in_grid(n, grid):
     return len(np.where(grid == n)[0])
 
 
-def get_best_area_size(num_probably_finite_areas, grid, maxx, maxy):
+def get_best_area_size(num_probably_finite_areas, grid):
     best_area_size = 0
     for num_finite_area in num_probably_finite_areas:
         finite_area_size = count_number_of_n_in_grid(num_finite_area, grid)
@@ -152,7 +133,7 @@ def day_6_part_1(lines):
     # get all probably infinite areas on the grid borders
     all_probably_finite_areas_on_borders = get_all_borders_areas(grid)
     num_probably_finite_areas = get_num_probably_finite_areas(all_probably_finite_areas_on_borders, areas)
-    best_area_size = get_best_area_size(num_probably_finite_areas, grid, maxx, maxy)
+    best_area_size = get_best_area_size(num_probably_finite_areas, grid)
     return str(best_area_size)
 
 
