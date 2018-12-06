@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from pprint import pprint
 
+
 def input_file():
     # return the input file in a text
     file = open('input', 'r')
@@ -34,15 +35,46 @@ class Area:
 
 def get_nearest_point(x, y, areas):
     d_min = np.inf
+    # each distances to case dot
+    distances = []
     nearest_to_other_points = []
-    alpha = "abcdefghijklmnopqrstuvwxyz"
+    #alpha = "abcdefghijklmnopqrstuvwxyz."
     for index, area in enumerate(areas):
         d = area.get_manhattan_distance(x, y)
-        print(alpha[index].upper(), " ", d)
+        #print(alpha[index].upper(), " ", d)
+        if d == 0.0:
+            return index
+        distances.append(d)
         if d <= d_min:
             d_min = d
             nearest_to_other_points.append(index)
-    return nearest_to_other_points
+    # case dot
+    distances.sort()
+    if distances[0] == distances[1]:
+        return 52
+    # case different point return the minimum point
+    return nearest_to_other_points[-1]
+
+
+def pretty_print(areas, grid):
+    # for a pretty print
+    alpha = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+             "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
+             "w", "x", "y", "z", "aa", "bb", "cc", "dd", "ee", "ff",
+             "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo",
+             "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx",
+             "yy", "zz", "."]
+    # grid alpha
+    grid_char = np.chararray(grid.shape, unicode=True)
+    for y in range(grid.shape[0]):
+        for x in range(grid.shape[1]):
+            grid_char[y][x] = alpha[int(grid[y][x])] #alpha[int(grid[y][x])]
+
+    # points on grid
+    for index, area in enumerate(areas):
+        grid_char[area.y][area.x] = alpha[index].upper()
+    print(grid_char)
+    #np.savetxt("test.out", grid.astype(int), fmt='%i', delimiter=' ')
 
 
 def day_6_part_1(lines):
@@ -55,30 +87,37 @@ def day_6_part_1(lines):
             maxx = x
         if maxy < y:
             maxy = y
-    """
-    d_min = np.inf
-    longest_distance_other_points = []
-    for index, area in enumerate(areas):
-        d = area.get_distance_from_other_points(areas)
-        if d < d_min:
-            d_min = d
-            nearest_other_points.append(index)
-    print(longest_distance_other_points)
-    """
-    grid = np.zeros((maxy+1, maxx+1))
-    # grille a completer pour avoir les areas
-    for index, obj in enumerate(areas):
-        #print(obj.y, " ", obj.x, " ", index)
-        grid[obj.y][obj.x] = (index + 1) * 100
-    pprint(grid)
-    get_nearest_point(0, 5, areas)
+
+    # print with the letter
+    grid = np.zeros((maxy + 2, maxx + 2), dtype=int)
     # pour chaque cellule qui valent 0 faire un calcul pour definir quel chiffre est le plus proche
     # s il y a egalite mettre un point soit 0
-    """
-    for y in grid.shape[0]:
-        for x in grid.shape[1]:
-            # get nearest point
-    """
+    for y in range(grid.shape[0]):
+        for x in range(grid.shape[1]):
+            # get nearest point and put the good point or dot
+            grid[y][x] = get_nearest_point(x, y, areas)
+
+    # all_bound_areas = get_all_bound_areas()
+    left_bound_areas = list(set(grid[:, 1]))
+    left_bound_areas.remove(52)
+    top_bound_areas = list(set(grid[:, 1]))
+    top_bound_areas.remove(52)
+    bot_bound_areas = list(set(grid[grid.shape[0]-1, ]))  # shape[1] line
+    bot_bound_areas.remove(52)
+    right_bound_areas = list(set(grid[:, grid.shape[1]-1]))  # shape[1] line
+    right_bound_areas.remove(52)
+    all_bound_areas = list(set(left_bound_areas+top_bound_areas+bot_bound_areas+right_bound_areas))
+    print("all_bound_areas ", all_bound_areas)
+    # finite_areas = get_finite_areas()
+    finite_areas = list(set(list(range(len(areas)))) - set(all_bound_areas))
+    print("finite_areas ", finite_areas)
+    # count in matrice
+    count = len(np.where(grid == 2)[0])
+    # best_area_size = get_best_area_size(finite_areas)
+    #for finite_area in finite_areas:
+
+    print()
+    #pretty_print(areas, grid)
     return ""
 
 
@@ -86,6 +125,7 @@ class TestDay6part1(unittest.TestCase):
 
     def test_day_6_part_1(self):
         lines = input_file()
+        lines.sort()
         #res = output_file()
         pred = day_6_part_1(lines)
         print(pred)
