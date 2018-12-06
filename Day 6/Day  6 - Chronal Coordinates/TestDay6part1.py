@@ -143,8 +143,6 @@ def day_6_part_1(lines):
     factor_to_finite = 2
     # get_areas_and_dimension
     maxx, maxy, areas = init_areas_with_bounds(lines)
-    print(maxx)
-    print(maxy)
     # add area for a special grid using a factor for the margin
     grid = np.zeros((maxy*factor_to_finite, maxx*factor_to_finite), dtype=int)
     # set areas coordonate before add them
@@ -165,7 +163,6 @@ class TestDay6part1(unittest.TestCase):
         lines.sort()
         res = output_file()
         pred = day_6_part_1(lines)
-        print(pred)
         assert(pred == res[0])
 
 
