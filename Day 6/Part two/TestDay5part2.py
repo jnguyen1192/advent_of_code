@@ -144,7 +144,7 @@ def day_6_part_2(lines):
     # factor for the margin if our grid is 3*3 and
     # the factor is 2 we obtains 9*9 with the areas
     # on the middle of the grid
-    factor_to_finite = 1.5
+    factor_to_finite = 2
     # get_areas_and_dimension
     maxx, maxy, areas = init_areas_with_bounds(lines)
     # add area for a special grid using a factor for the margin
@@ -175,12 +175,12 @@ def day_6_part_2(lines):
                 # area.get_manhattan_distance(x, y, area)
                 sum += area.get_manhattan_distance(x, y)
                 # sum_all_coordonate_distance()
-                if sum > less_than:
+                if sum >= less_than:
                     bool_sum = False
                     break
             # set the grid
             grid[y][x] = bool_sum
-    print(grid)
+    np.savetxt("test.txt", grid, delimiter=" ", fmt='%i')
     print(len(np.where(grid == 1)[0]))
 
     # if sum_all_coordonate < 100000 return True else False
