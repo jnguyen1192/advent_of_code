@@ -86,7 +86,7 @@ def day_6_part_1(lines):
             maxx = x
         if maxy < y:
             maxy = y
-    factor_to_finite = 20
+    factor_to_finite = 1
     # add area for a special grid
     grid = np.zeros((maxy*factor_to_finite, maxx*factor_to_finite), dtype=int)
     # set areas coordonate before add them
