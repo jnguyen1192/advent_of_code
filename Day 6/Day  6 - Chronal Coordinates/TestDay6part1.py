@@ -107,16 +107,19 @@ def day_6_part_1(lines):
     right_bound_areas = list(set(grid[:, grid.shape[1]-1]))  # shape[1] line
     right_bound_areas.remove(52)
     all_bound_areas = list(set(left_bound_areas+top_bound_areas+bot_bound_areas+right_bound_areas))
-    print("all_bound_areas ", all_bound_areas)
+    #print("all_bound_areas ", all_bound_areas)
     # finite_areas = get_finite_areas()
-    finite_areas = list(set(list(range(len(areas)))) - set(all_bound_areas))
-    print("finite_areas ", finite_areas)
+    num_finite_areas = list(set(list(range(len(areas)))) - set(all_bound_areas))
+    #print("finite_areas ", num_finite_areas)
     # count in matrice
-    count = len(np.where(grid == 2)[0])
+    #count = len(np.where(grid == 2)[0])
     # best_area_size = get_best_area_size(finite_areas)
-    #for finite_area in finite_areas:
-
-    print()
+    best_area_size = 0
+    for num_finite_area in num_finite_areas:
+        finite_area_size = len(np.where(grid == num_finite_area)[0])
+        if finite_area_size > best_area_size:
+            best_area_size = finite_area_size
+    print("best_area_size ", best_area_size)
     #pretty_print(areas, grid)
     return ""
 
