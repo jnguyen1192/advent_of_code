@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import re
 
+
 def input_file():
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
@@ -31,6 +32,7 @@ def build_claim_u(left_edge, top_edge, width, tall):
     # add one claim
     area[top_edge:top_edge+tall, left_edge:left_edge+width] += 1
     return area
+
 
 def read_input(lines):
     # init input
