@@ -135,13 +135,13 @@ class MetadataSearcher:
 
     def exec(self):
         # browse until the end of the searcher
-        while self.get_iterator() + 1 < self.get_child_iterator() - 1:
+        while self.get_iterator() -2 < self.get_child_iterator():
             # get the current header
             nb_child, metadata_entries = self.get_next_header()
             # proceed the right case
             self.nb_child_zero_or_different(nb_child, metadata_entries)
             #print("---")
-            print("end ", self.get_iterator(), " ", self.get_child_iterator())
+            #print("end ", self.get_iterator(), " ", self.get_child_iterator())
 
 
 def day_8_part_1(lines):
