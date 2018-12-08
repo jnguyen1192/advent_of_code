@@ -18,7 +18,7 @@ def output_file():
     return res
 
 
-class Correct_order:
+class CorrectOrder:
     # class to execute the correct order list
     def __init__(self, raw_nodes, first_letters):
         self.raw_nodes = raw_nodes
@@ -107,13 +107,13 @@ def get_first_letters(letters, raw_nodes):
 
 
 def day_7_part_1(text):
-    # data prepare
+    # data retrieve
     raw_nodes = [tuple(parse("Step {} must be finished before step {} can begin.", l)) for l in text.split('\n')] # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
-    # data transform
+    # data transformation
     letters = set([raw[0] for raw in raw_nodes] + [raw[1] for raw in raw_nodes])
     first_letters = get_first_letters(letters, raw_nodes)
     # data model
-    correct_order = Correct_order(raw_nodes, first_letters)
+    correct_order = CorrectOrder(raw_nodes, first_letters)
     # data analysis
     correct_order.exec()
     # data visualize
