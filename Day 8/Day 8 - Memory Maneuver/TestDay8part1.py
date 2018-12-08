@@ -19,6 +19,7 @@ def output_file():
 
 
 class RootNode:
+    # the first node of numbers
     def __init__(self, numbers):
         # convert string list into int list
         self.numbers = list(map(int, numbers))
@@ -72,6 +73,7 @@ class MetadataSearcher:
         self.num_node = 0
         self.iterator = 0
         self.child_iterator = len(numbers) - 1
+        self.recursivity_memory = []
 
     def get_node_using_num_node(self, num_node):
         # return the node with the num node given as parameter
@@ -79,10 +81,18 @@ class MetadataSearcher:
             if node.get_num_node() == num_node:
                 return node
 
+    def get_num_node(self):
+        # return the num of node
+        return self.num_node
+
     def get_next_num_node(self):
         # return the n+1 num of node
         self.num_node += 1
         return self.num_node
+
+    def previous_num_node(self):
+        # get the previous node for recusivity
+        self.num_node -= 1
 
     def next_iterator(self):
         # increment the iterator by one
@@ -111,10 +121,9 @@ class MetadataSearcher:
         for i in range(metadata_entries):
             metadata.append(self.numbers[self.get_iterator()])
             self.next_iterator()
-        self.print_node()
         return metadata
 
-    def child_equals_zero(self, metadata_entries):
+    def child_with_metadata(self, metadata_entries):
         # create the node directly
         num_node = self.get_next_num_node()
         # add metadata on node
@@ -124,7 +133,7 @@ class MetadataSearcher:
         # add it on the list of node
         self.add_node(node)
 
-    def child_different_zero(self, nb_child, metadata_entries):
+    def child_without_metadata(self, nb_child, metadata_entries):
         # create the node directly
         num_node = self.get_next_num_node()
         # get the metadata later
@@ -136,39 +145,41 @@ class MetadataSearcher:
     def get_next_header(self):
         # return the header composed by the couple (nb_child, metadata_entries)
         nb_child = self.numbers[self.iterator]
+        # increment the iterator
         self.next_iterator()
         metadata_entries = self.numbers[self.iterator]
-        #print(nb_child, " ", metadata_entries)
+        # increment the iterator
         self.next_iterator()
         return nb_child, metadata_entries
 
+    def alloc_memory_recurivity(self):
+        # add the next num node on memory
+        self.recursivity_memory.append(self.num_node + 1)
+
+    def free_memory_recurivity(self):
+        # add the num node on memory
+        self.recursivity_memory.pop()
+
     def nb_child_zero_or_different(self, nb_child, metadata_entries):
-        # proceed the two case
+        # proceed by two case
         if nb_child == 0:
             # create the child with his metadata
-            self.child_equals_zero(metadata_entries)
+            self.child_with_metadata(metadata_entries)
         else:
-            # TODO Recursivity
-            num_node_before_recursivity = self.num_node
-            self.child_different_zero(nb_child, metadata_entries)
-            self.find_child(nb_child)
+            # alloc memory for recursivity
+            self.alloc_memory_recurivity()
+            # create the child without metadata
+            self.child_without_metadata(nb_child, metadata_entries)
+            # recursive to find the child of the current child
+            self.find_children(nb_child)
             # add metadata on node created before
             metadata = self.metadata_retrieve(metadata_entries)
-            # update the associate node
-            # get node using id
-            node_before_recursivity = self.get_node_using_num_node(num_node_before_recursivity)
+            # update the associate node using memory for recursivity
+            node_before_recursivity = self.get_node_using_num_node(self.recursivity_memory[-1])
+            # free memory after recusivity
+            self.free_memory_recurivity()
             # set the metadata
             node_before_recursivity.set_metadata(metadata)
-
-    def get_end_iterator(self):
-        # return the index of the last iterator using nodes nb_child and metadata_entries
-        reverse_end_iterator = 0
-        for node in self.nodes:
-            if node.get_child_nodes() != 0:
-                reverse_end_iterator += node.get_metadata_entries()
-        #print('self.iterator ', self.iterator)
-        #print('reverse_end_iterator ', reverse_end_iterator)
-        return len(self.numbers) - reverse_end_iterator
 
     def get_sum_metadata_entries(self):
         # return the sum of all metadata entries
@@ -182,38 +193,41 @@ class MetadataSearcher:
         for node in self.nodes:
             print(string.ascii_uppercase[node.num_node-1], " ", node.child_nodes, " ", node.metadata_entries, " ", node.metadata)
             sum_lengh_metadata += len(node.metadata)
-        print("sum_lengh_metadata ", sum_lengh_metadata)
-        print("total predict ", str(len(self.nodes)*2+sum_lengh_metadata))
-        print("len(self.numbers) ", len(self.numbers))
-        cinq = 5
-        print(self.numbers[-cinq:])
+        print("self.recursivity_memory ", self.recursivity_memory)
+        print("-------------------------------")
 
-    def find_child(self, child_nodes):
-        # recusive loop to find child of child
+    def create_root(self):
+        # return parameters to create a node root
+        root_node = RootNode(self.numbers)
+        # create the node directly
+        root_num_node = self.get_next_num_node()
+        # get the number of children of root
+        root_child_nodes = root_node.get_child_nodes()
+        # increment the iterator
+        self.next_iterator()
+        # get the number of metadata entries of root
+        root_metadata_entries = root_node.get_metadata_entries()
+        # increment the iterator
+        self.next_iterator()
+        # get the metadata of root
+        root_metadata = root_node.get_metadata()
+        return root_num_node, root_child_nodes, root_metadata_entries, root_metadata
+
+    def find_children(self, child_nodes):
+        # recusive loop to find children of a child
         for i in range(child_nodes):
             # get the current header
             nb_child, metadata_entries = self.get_next_header()
             # proceed the right case
             self.nb_child_zero_or_different(nb_child, metadata_entries)
-            #print("---")
-            #print("end ", self.get_iterator(), " ", self.get_child_iterator())
 
     def exec(self):
-        root_node = RootNode(self.numbers)
-        # create the node directly
-        root_num_node = self.get_next_num_node()
-        # get the number of childs of root
-        root_child_nodes = root_node.get_child_nodes()
-        # get the number of metadata entries of root
-        root_metadata_entries = root_node.get_metadata_entries()
-        # get the metadata of root
-        root_metadata = root_node.get_metadata()
         # create the root node
-        node = Node(root_num_node, root_child_nodes, root_metadata_entries, root_metadata)
+        root_node = Node(*self.create_root())
         # add it on the list of node
-        self.add_node(node)
+        self.add_node(root_node)
         # call the recursive function for the first time using root_node
-        self.find_child(root_child_nodes)
+        self.find_children(root_node.get_child_nodes())
 
 
 def day_8_part_1(lines):
@@ -226,7 +240,7 @@ def day_8_part_1(lines):
     # data analyse
     sum_metadata_entries = metadata_searcher.get_sum_metadata_entries()
     # data visualize
-    metadata_searcher.print_node()
+    #metadata_searcher.print_node()
     return str(sum_metadata_entries)
 
 
