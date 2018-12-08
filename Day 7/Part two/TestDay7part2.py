@@ -366,7 +366,7 @@ def day_7_part_2(text):
     # data transformation
     worktime = Workflow(correct_order)
     # data modelisation
-    worktime.exec(True)
+    worktime.exec()  # add True to enable debug mode
     # data visualisation
     time_in_seconds = worktime.get_timer()
     return str(time_in_seconds)
@@ -376,10 +376,9 @@ class TestDay7part2(unittest.TestCase):
 
     def test_day_7_part_2(self):
         text = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_7_part_2(text)
-        print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
     def test_code(self):
         a = ['D']
