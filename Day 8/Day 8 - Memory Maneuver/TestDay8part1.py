@@ -105,7 +105,7 @@ class MetadataSearcher:
         nb_child = self.numbers[self.iterator]
         self.next_iterator()
         metadata_entries = self.numbers[self.iterator]
-        print(nb_child, " ", metadata_entries)
+        #print(nb_child, " ", metadata_entries)
         self.next_iterator()
         return nb_child, metadata_entries
 
@@ -122,7 +122,8 @@ class MetadataSearcher:
         for node in self.nodes:
             if node.get_child_nodes() != 0:
                 reverse_end_iterator += node.get_metadata_entries()
-        print('self.iterator ', self.iterator)
+        #print('self.iterator ', self.iterator)
+        #print('reverse_end_iterator ', reverse_end_iterator)
         return len(self.numbers) - reverse_end_iterator
 
     def get_sum_metadata_entries(self):
@@ -134,11 +135,13 @@ class MetadataSearcher:
 
     def exec(self):
         # browse until the end of the searcher
-        while self.get_iterator() != self.get_end_iterator():
+        while self.get_iterator() + 1 < self.get_child_iterator() - 1:
             # get the current header
             nb_child, metadata_entries = self.get_next_header()
             # proceed the right case
             self.nb_child_zero_or_different(nb_child, metadata_entries)
+            #print("---")
+            print("end ", self.get_iterator(), " ", self.get_child_iterator())
 
 
 def day_8_part_1(lines):
