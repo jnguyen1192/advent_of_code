@@ -152,13 +152,14 @@ class Job:
         self.time_to_do = time_to_do
         self.time_current_time = time_to_do
         self.number_current_workers = 0
-        self.prerequite_jobs = prerequite_jobs
+        self.prerequite_jobs_letters = prerequite_jobs
 
     def get_letter_job(self):
         # return the letter of the job
         return self.letter
 
     def get_time_to_do(self):
+        # return the time to do the job
         return self.time_to_do
 
     def add_worker(self):
@@ -166,16 +167,19 @@ class Job:
         self.number_current_workers += 1
 
     def is_job_done(self):
-        # if the job is done return True
+        # if the job is done return True and free the worker
         return self.time_current_time <= 0
 
     def is_job_available(self, jobs_done):
         # if the prerequite jobs are done and there was no worker on the job return True
         # case there was a worker on the job
-        if self.number_current_workers != 0:
+        if self.number_current_workers != 0 or self.time_current_time <= 0:
             return False
         # case prerequite jobs aren't done
-        if not self.prerequite_jobs in jobs_done:
+        if set(self.prerequite_jobs_letters).issubset([job.get_letter_job for job in jobs_done]):
+            # the special case for the first element
+            if len(self.prerequite_jobs_letters) == len(jobs_done) == 0:
+                return True
             return False
         return True
 
@@ -184,13 +188,14 @@ class Job:
         if self.time_current_time > 0 and self.number_current_workers != 0:
             # each step are calculate by the number of workers affected on the job
             self.time_current_time -= self.number_current_workers
-
+        if self.time_current_time == 0:
+            self.number_current_workers = 0
 
 class WorkTime:
-
-    def __init__(self, correct_order, time_step=60, number_worker=5):
+    def __init__(self, correct_order, time_step=0, number_worker=2, timer=0):
         self.correct_order = correct_order
         self.time_step = time_step
+        self.timer = timer
         self.number_worker = number_worker
         self.workers = []
         self.jobs = []
@@ -201,9 +206,9 @@ class WorkTime:
         time_letter = self.time_step + time_by_letter.find(letter) + 1
         return time_letter
 
-    def get_time_step(self):
+    def get_timer(self):
         # return the number of seconds past
-        return self.time_step
+        return self.timer
 
     def is_all_job_done(self):
         # return True if all jobs are done
@@ -214,15 +219,16 @@ class WorkTime:
 
     def get_job_by_letter(self, letter):
         # return the job using the letter
-        for index, letter_order in enumerate(self.correct_order.get_correct_order_string):
-            if letter == letter_order:
-                return self.jobs[index]
+        correct_order_string = self.correct_order.get_correct_order_string()
+        for i in range(len(correct_order_string)):
+            if letter == correct_order_string[i]:
+                return self.jobs[i]
 
     def get_worker_by_id(self, id):
         # return the job using the letter
-        for index, id_current in enumerate(self.workers):
+        for id_current in range(len(self.workers)):
             if id == id_current:
-                return self.workers[index]
+                return self.workers[id_current]
 
     def get_jobs_letters_done(self):
         # return the jobs done
@@ -244,6 +250,7 @@ class WorkTime:
         # return the ids of available workers
         letters_available_jobs = []
         for job in self.jobs:
+            # add a job if the prerequite are done
             if job.is_job_available(jobs_done):
                 letters_available_jobs.append(job.get_letter_job())
         return letters_available_jobs
@@ -267,8 +274,10 @@ class WorkTime:
         for letter in correct_order_string:
             # get time to do by job letter
             time_to_do = self.get_time_by_letter(letter)
+            #print("time_to_do ", letter, " ", time_to_do)
             # get prerequite jobs a job need by letter
             prerequite_letters = self.correct_order.get_prerequite_letters(letter)
+            #print("prerequite_letters ", letter, " ", prerequite_letters)
             # add a job
             self.add_job(Job(letter, time_to_do, prerequite_letters))
 
@@ -282,17 +291,18 @@ class WorkTime:
 
     def assign_worker_on_job(self, id, job):
         worker = self.get_worker_by_id(id)
-        worker.add_job()
+        worker.add_job(job)
         job.add_worker()
 
     def step_time(self):
         # step all the worker
         for worker in self.workers:
+            print(worker.id, " ", worker.time_to_work)
             worker.step()
         # step all the jobs
         for job in self.jobs:
             job.step()
-        self.time_step += 1
+        self.timer += 1
 
     def exec(self):
         # get the result from part 1
@@ -301,30 +311,33 @@ class WorkTime:
         self.init_workers()
         # create the jobs
         self.init_jobs(correct_order_string)
-        # TODO first iteration
-
         # launch the step machine with an infinite loop
         # is_all_job_done_stop_step
         while not self.is_all_job_done():
             self.step_time()
             # get jobs done
             jobs_done = self.get_jobs_done()
+            #print("time first job ", self.jobs[0].time_current_time)
+            print("len(jobs_done) ", len(jobs_done))
             letters_available_jobs = self.get_letters_available_jobs(jobs_done)
+            #print("letters_available_jobs ", letters_available_jobs)
             # assign worker on each available job or wait if not worker are available
             for letter in letters_available_jobs:
                 job_available = self.get_job_by_letter(letter)
                 # case the job is available
-                if job_available.is_job_available():
+                if job_available.is_job_available(jobs_done):
                     # add an worker on it
                     # search for available worker
                     ids_available_workers = self.get_ids_available_workers()
+                    #print(ids_available_workers)
+                    # au debut tous les workers sont disponibles [0, 1, 2, 3, 4]
                     # verify if a worker can have a job
                     # case worker available
                     if len(ids_available_workers) != 0:
                         # assign the worker on this job
                         self.assign_worker_on_job(ids_available_workers[0], job_available)
                     # wait if nothing to  do
-            print(letters_available_jobs)
+            print(self.timer)
 
 
 def day_7_part_2(text):
@@ -335,7 +348,7 @@ def day_7_part_2(text):
     # data modelisation
     worktime.exec()
     # data visualisation
-    time_in_seconds = worktime.get_time_step()
+    time_in_seconds = worktime.get_timer()
     return str(time_in_seconds)
 
 
@@ -347,6 +360,12 @@ class TestDay7part2(unittest.TestCase):
         pred = day_7_part_2(text)
         print(pred)
         #assert(pred == res[0])
+
+    def test_code(self):
+        a = ['D']
+        b = ['A', 'D']
+        if set(a).issubset(b):
+            print("Condition ok")
 
 
 if __name__ == '__main__':
