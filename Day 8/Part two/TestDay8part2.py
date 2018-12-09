@@ -39,11 +39,12 @@ class RootNode:
 
 class Node:
     # class that illustrate a node containing header, child nodes and metadata entries
-    def __init__(self, num_node, child_nodes, metadata_entries, metadata=[]):
+    def __init__(self, num_node, child_nodes, metadata_entries, parent_num_node, metadata=[]):
         self.num_node = num_node
         self.child_nodes = child_nodes
         self.metadata_entries = metadata_entries
         self.metadata = metadata
+        self.parent_num_node = parent_num_node
         self.children_num_node = []
 
     def is_parent(self):
@@ -79,6 +80,9 @@ class Node:
     def get_children_num_node(self):
         # return the children num node
         return self.children_num_node
+
+    def get_parent_num_node(self):
+        return self.parent_num_node
 
 
 class MetadataSearcher:
@@ -159,22 +163,22 @@ class MetadataSearcher:
             self.next_iterator()
         return metadata
 
-    def child_with_metadata(self, metadata_entries):
+    def child_with_metadata(self, metadata_entries, parent_num_node):
         # create the node directly
         num_node = self.get_next_num_node()
         # add metadata on node
         metadata = self.metadata_retrieve(metadata_entries)
         # create the associate node
-        node = Node(num_node, 0, metadata_entries, metadata)
+        node = Node(num_node, 0, metadata_entries, parent_num_node, metadata)
         # add it on the list of node
         self.add_node(node)
 
-    def child_without_metadata(self, nb_child, metadata_entries):
+    def child_without_metadata(self, nb_child, metadata_entries, parent_num_node):
         # create the node directly
         num_node = self.get_next_num_node()
         # get the metadata later
         # create the associate node
-        node = Node(num_node, nb_child, metadata_entries)
+        node = Node(num_node, nb_child, metadata_entries, parent_num_node)
         # add it on the list of node
         self.add_node(node)
 
@@ -208,13 +212,13 @@ class MetadataSearcher:
         # proceed by two case
         if nb_child == 0:
             # create the child with his metadata
-            self.child_with_metadata(metadata_entries)
+            self.child_with_metadata(metadata_entries, self.get_num_node())
         else:
             # alloc memory for recursivity
             self.alloc_memory_recurivity()
             #self.print_node()
             # create the child without metadata
-            self.child_without_metadata(nb_child, metadata_entries)
+            self.child_without_metadata(nb_child, metadata_entries, self.get_num_node())
             # recursive to find the child of the current child
             self.find_children(self.get_num_node(), nb_child)
             # add metadata on node created before
@@ -248,7 +252,7 @@ class MetadataSearcher:
         self.next_iterator()
         # get the metadata of root
         root_metadata = root_node.get_metadata()
-        return root_num_node, root_child_nodes, root_metadata_entries, root_metadata
+        return root_num_node, root_child_nodes, root_metadata_entries, root_num_node - 1, root_metadata
 
     def find_children(self, num_node, child_nodes, root=False):
         # recursive loop to find children of a child
@@ -257,7 +261,6 @@ class MetadataSearcher:
             parent_node = self.get_nodes()[num_node-1]
             # add children on parent node
             parent_node.add_new_children(self.get_num_node()+1)
-            #print(num_node, " ", self.get_num_node()+1)
             # get the current header
             nb_child, metadata_entries = self.get_next_header()
             # proceed the right case
@@ -281,15 +284,20 @@ class MetadataSearcher:
         # index - 1 : Pour A[1, 1, 2] si index vaut 1,
         # ça veut dire que nous choisissons le premier enfant de A,
         # dans notre cas B qui vaut 2 dans notre liste de noeuds
-        print(index)
+        print(node.get_num_node())
+        print("index ", index)
+        print("children_num_node ", children_num_node)
         return children_num_node[index - 1]
         # step 1 : get_children_num_node() = > Pour A, B devient 1 et C devient 2
 
     def find_value(self, child_num_node):
         # find the value of the child node indexed
         # get the node using num node
-        child_node = self.get_node_using_num_node(child_num_node)
         print("child_num_node ", child_num_node)
+        print("self.get_node_using_num_node(self.nodes[child_num_node].get_parent())", self.get_node_using_num_node(self.nodes[child_num_node].get_parent_num_node()))
+        # we want to get the node give
+        # the node is 1 for the first example
+        child_node = self.get_node_using_num_node(self.get_child_num_node_by_index(self.get_node_using_num_node(self.nodes[child_num_node].get_parent_num_node()), child_num_node))
         print("not child_node.is_parent() ", not child_node.is_parent())
         # case with no child
         if not child_node.is_parent():
@@ -308,10 +316,10 @@ class MetadataSearcher:
             # browse using in child using index
             for children_metadata_entrie in children_metadata_entries:
                 # case index is wrong
-                if children_metadata_entrie <= len(children_metadata_entries):
-                    child_num_node_ = self.get_child_num_node_by_index(child_node, children_metadata_entrie)
-                    print("child_num_node_ ", child_num_node_, " ", len(children_metadata_entries))
-                    sum_value += self.find_value(child_num_node_)
+                if children_metadata_entrie <= child_node.get_child_nodes():
+                    #child_num_node_ = self.get_child_num_node_by_index(child_node, children_metadata_entrie)
+                    print("child_num_node_ ", children_metadata_entrie, " ", child_node.get_child_nodes())
+                    sum_value += self.find_value(children_metadata_entrie)  # correspond a 2 soit C
 
             print("C num = ", child_num_node)
             print("C = ", sum_value)
@@ -355,7 +363,7 @@ class MetadataSearcher:
             print("root_metadata_entrie ", root_metadata_entrie)
             oldval = sum_metadata_entries
             if root_metadata_entrie < root_node.get_child_nodes() and root_metadata_entries != 0:
-                sum_metadata_entries += self.find_value(root_metadata_entrie)
+                sum_metadata_entries += self.find_value(root_metadata_entrie) # root_metadata_entrie correspond a l'index 1 soit B
             print(sum_metadata_entries - oldval)
         return sum_metadata_entries
 
