@@ -1,5 +1,4 @@
 import unittest
-import string
 
 
 def input_file():
@@ -188,14 +187,6 @@ class MetadataSearcher:
             sum_metadata += sum(node.get_metadata())
         return sum_metadata
 
-    def print_node(self):
-        sum_lengh_metadata = 0
-        for node in self.nodes:
-            print(string.ascii_uppercase[node.num_node-1], " ", node.child_nodes, " ", node.metadata_entries, " ", node.metadata)
-            sum_lengh_metadata += len(node.metadata)
-        print("self.recursivity_memory ", self.recursivity_memory)
-        print("-------------------------------")
-
     def create_root(self):
         # return parameters to create a node root
         root_node = RootNode(self.numbers)
@@ -244,14 +235,13 @@ def day_8_part_1(lines):
     return str(sum_metadata_entries)
 
 
-class TestDay5part1(unittest.TestCase):
+class TestDay8part1(unittest.TestCase):
 
     def test_day_8_part_1(self):
         lines = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_8_part_1(lines)
-        print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':
