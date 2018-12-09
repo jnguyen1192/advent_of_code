@@ -188,7 +188,7 @@ def day_9_part_1(text):
     # data transformation
     number_players, last_marble_worth_point = map(int, raw_nodes[0])
     # data modelisation
-    marble_game = MarbleGame(9, 25)
+    marble_game = MarbleGame(number_players, last_marble_worth_point)
     # data analysis
     marble_game.exec(False)
     # data visualisation
