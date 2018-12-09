@@ -1,5 +1,4 @@
 import unittest
-import string
 
 
 def input_file():
@@ -88,9 +87,6 @@ class Node:
         # return the children num node
         return self.children_num_node
 
-    def get_parent_num_node(self):
-        return self.parent_num_node
-
 
 class MetadataSearcher:
     # class to transform a line into nodes using an iterator to browse the numbers
@@ -98,30 +94,14 @@ class MetadataSearcher:
         # convert string list into int list
         self.numbers = list(map(int, numbers))
         self.nodes = []
-        self.is_visit = [False] * len(numbers)
         self.num_node = 0
         self.iterator = 0
-        self.child_iterator = len(numbers) - 1
+        # useful to use recursion on Python
         self.recursivity_memory = []
-        self.recursivity_memory_ = []
-        self.sum_not_recursive = 0
 
     def get_nodes(self):
         # return the list of nodes
         return self.nodes
-
-    def print_node(self):
-        sum_lengh_metadata = 0
-        for node in self.nodes:
-            if len(self.nodes) < len(string.ascii_uppercase):
-                print(string.ascii_uppercase[node.num_node-1], " ", node.child_nodes, " ", node.metadata_entries, " ", node.metadata)
-                print("Children ", [string.ascii_uppercase[c-1] for c in node.children_num_node])
-            else:
-                print(node.num_node-1, " ", node.child_nodes, " ", node.metadata_entries, " ", node.metadata)
-                print("Children ", node.children_num_node)
-            sum_lengh_metadata += len(node.metadata)
-        print("self.recursivity_memory ", self.recursivity_memory)
-        print("-------------------------------")
 
     def get_node_using_num_node(self, num_node):
         # return the node with the num node given as parameter
@@ -149,14 +129,6 @@ class MetadataSearcher:
     def get_iterator(self):
         # return the current iterator
         return self.iterator
-
-    def next_child_iterator(self):
-        # increment the iterator by one
-        self.child_iterator -= 1
-
-    def get_child_iterator(self):
-        # return the current iterator
-        return self.child_iterator
 
     def add_node(self, node):
         # add the node in the node list
@@ -208,14 +180,6 @@ class MetadataSearcher:
         # remove the num node on memory
         self.recursivity_memory.pop()
 
-    def alloc_memory_recurivity_(self, child_num_node):
-        # add the next num node on memory
-        self.recursivity_memory_.append(child_num_node)
-
-    def free_memory_recurivity_(self):
-        # add the num node on memory
-        self.recursivity_memory_.pop()
-
     def nb_child_zero_or_different(self, nb_child, metadata_entries):
         # proceed by two case
         if nb_child == 0:
@@ -224,7 +188,6 @@ class MetadataSearcher:
         else:
             # alloc memory for recursivity
             self.alloc_memory_recurivity()
-            #self.print_node()
             # create the child without metadata
             self.child_without_metadata(nb_child, metadata_entries, self.get_num_node())
             # recursive to find the child of the current child
@@ -274,27 +237,6 @@ class MetadataSearcher:
             # proceed the right case
             self.nb_child_zero_or_different(nb_child, metadata_entries)
 
-    def is_child_num_node_parent(self, child_num_node):
-        # return true if the child is a parent too
-        for node in self.nodes:
-            # get children
-            children = node.get_children_num_node()
-            for child in children:
-                if child.get_num_node() == child_num_node:
-                    return True
-            # if children equals child_num_node
-            # return True
-        return False
-
-    def get_child_num_node_by_index(self, index, node):
-        # return the child of node using index to pick it
-        children_num_node = node.get_children_num_node()
-        # index - 1 : Pour A[1, 1, 2] si index vaut 1,
-        # ça veut dire que nous choisissons le premier enfant de A,
-        # dans notre cas B qui vaut 2 dans notre liste de noeuds
-        return children_num_node[index - 1]
-        # step 1 : get_children_num_node() = > Pour A, B devient 1 et C devient 2
-
     def exec(self):
         # create the root node
         root_node = Node(*self.create_root())
@@ -303,11 +245,19 @@ class MetadataSearcher:
         # call the recursive function for the first time using root_node
         self.find_children(root_node.get_num_node(), root_node.get_child_nodes(), True)
 
+    def get_child_num_node_by_index(self, index, node):
+        # return the child of node using index to pick it
+        children_num_node = node.get_children_num_node()
+        # index - 1 : Pour A[1, 1, 2] si index vaut 1,
+        # ça veut dire que nous choisissons le premier enfant de A,
+        # dans notre cas B qui vaut 2 dans notre liste de noeuds
+        return children_num_node[index - 1]
+
     def get_index_of_available_child(self, num_node):
         # return a list of index in our example B and C for A
         index_list = []
         node = self.get_node_using_num_node(num_node)
-        # take the first metadata entries
+        # get all index using metadata entries
         metadata_entries = node.get_metadata()
         for metadata_entrie in metadata_entries:
             if metadata_entrie <= node.get_child_nodes() and metadata_entrie != 0:
@@ -316,8 +266,8 @@ class MetadataSearcher:
 
     def convert_index_to_children_num_node(self, index, node):
         # return children num node
-        # from index of children we obtain children num node
         children_num_node = []
+        # from index of children we obtain children num node
         for i in index:
             children_num_node.append(self.get_child_num_node_by_index(i, node))
         return children_num_node
@@ -325,30 +275,22 @@ class MetadataSearcher:
     def get_value_of_unavailable_child(self, num_node):
         # return value of node
         node = self.get_node_using_num_node(num_node)
-        print("node.get_metadata() ", node.get_metadata())
         return sum(node.get_metadata())
 
     def find_value_of_root_node(self):
         # return the sum of child index by metadata entries
         # init the result of sum
         value = 0
-        # init the array of index
-        tree_index = []
         # get root node
         root_node = self.get_node_using_num_node(1)
         # index of available child
         root_index_list = self.get_index_of_available_child(1)
         # convert index to child num node
         root_list = self.convert_index_to_children_num_node(root_index_list, root_node)
-        print("index of root child ", root_index_list)
-        # add the second metadata_entries
-
+        # process the algorithm without recursion
         while len(root_list) != 0:
             i = root_list[0]
-            print("root_list ", root_list)
-            print("i ", i)
             node = self.get_node_using_num_node(i)
-            print("node.is_parent() ", node.is_parent())
             # case parent
             if node.is_parent():
                 # get root node
@@ -361,8 +303,7 @@ class MetadataSearcher:
             else:
                 value += self.get_value_of_unavailable_child(i)
             root_list.pop(0)
-            print("value ", value)
-        print("-----------------\nResult ", value)
+        return value
 
 
 def day_8_part_2(lines):
@@ -373,24 +314,17 @@ def day_8_part_2(lines):
     # data modelisation
     metadata_searcher.exec()
     # data analyse
-    # sum_metadata_entries_only_child_root
-    root_num_node = 1
-    sum_values_root = 0
-    # TODO
-    metadata_searcher.find_value_of_root_node()
-    # data visualize
-    #metadata_searcher.print_node()
-    return str(sum_values_root)
+    sum_metadata_entries_only_child_root = metadata_searcher.find_value_of_root_node()
+    return str(sum_metadata_entries_only_child_root)
 
 
 class TestDay8part1(unittest.TestCase):
 
     def test_day_8_part_2(self):
         lines = input_file()
-        #res = output_file()
+        res = output_file()
         pred = day_8_part_2(lines)
-        print("pred ", pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':
