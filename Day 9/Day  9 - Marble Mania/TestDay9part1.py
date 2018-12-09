@@ -85,10 +85,26 @@ class MarbleGame:
         value_left_marble_points = self.marbles[self.get_current_location_marble()-1]
         # insert the marble points
         self.marbles.insert(self.get_current_location_marble(), value_left_marble_points)
-        # TODO probably a special case with -1
 
-    def something_differently_happened(self):
-        pass
+    def insert_marble_without_constraints(self):
+        # insert a marble in the next location marble
+        self.next_marble()
+        self.marbles.insert(self.get_current_location_marble()+1, self.get_current_marble_points()) # using clockwise
+        self.next_marble()
+
+    def something_differently_happened(self, current_num_player):
+        # keep marble that would be placed to points
+        keep_marble_points_that_would_be_placed = self.get_current_marble_points()  #  + 1 because it is the next
+        # add this marble points into the current player score
+        self.players[current_num_player].add_point(keep_marble_points_that_would_be_placed)
+        # get back from 7 location from current location marble
+        self.get_back_from_current_location()
+        # keep value of marble 7 counter-clockwise
+        keep_marble_placed_before_removed = self.marbles[self.get_current_location_marble()]
+        # add marble point on 7 counter-clockwise to the current player score
+        self.players[current_num_player].add_point(keep_marble_placed_before_removed)
+        # marble 7 in counter-clockwise from the current marble is removed
+        self.remove_current_marble()
 
     def get_back_from_current_location(self, number=7):
         self.current_location_marble -= number
@@ -96,27 +112,13 @@ class MarbleGame:
         if self.current_location_marble < 0:
             self.current_location_marble += len(self.marbles)
 
-    def insert_marble(self, current_num_player):
+    def insert_marble_with_constraints(self, current_num_player):
         # rule : a player insert a marble with the next marble in clockwise
         if self.get_current_marble_points() % 23 != 0:
-            self.next_marble()
-            self.marbles.insert(self.get_current_location_marble()+1, self.get_current_marble_points()) # using clockwise
-            self.next_marble()
+            self.insert_marble_without_constraints()
         else:
-            # TODO Refactoring
             # rule : something differently happens for multiple of 23
-            # keep marble that would be placed to points
-            keep_marble_points_that_would_be_placed = self.get_current_marble_points()  #  + 1 because it is the next
-            # add this marble points into the current player score
-            self.players[current_num_player].add_point(keep_marble_points_that_would_be_placed)
-            # get back from 7 location from current location marble
-            self.get_back_from_current_location()
-            # keep value of marble 7 counter-clockwise
-            keep_marble_placed_before_removed = self.marbles[self.get_current_location_marble()]
-            # add marble point on 7 counter-clockwise to the current player score
-            self.players[current_num_player].add_point(keep_marble_placed_before_removed)
-            # marble 7 in counter-clockwise from the current marble is removed
-            self.remove_current_marble()
+            self.something_differently_happened(current_num_player)
             # immediatly located clockwise after the marble removed and become the new current marble plus one
         # increment marble points
         self.increment_marble_points()
@@ -138,11 +140,11 @@ class MarbleGame:
 
     def step_game(self, debug=False):
         # in each step of the game
-        # the current player insert a marble and the table is update
         # we move to the next player
         self.next_player()
+        # the current player insert a marble and the table is update
         current_num_player = self.get_current_num_player()
-        self.insert_marble(current_num_player)
+        self.insert_marble_with_constraints(current_num_player)
         if debug:
             self.pretty_print()
 
@@ -181,12 +183,17 @@ class MarbleGame:
                 highest_score = player_score
         return highest_score
 
-def day_9_part_1(text):
-    # data retrieve
+
+def data_retrieve(text):
     raw_nodes = [tuple(parse("{} players; last marble is worth {} points", l)) for l in
                  text.split('\n')]  # @source https://github.com/ngilles/adventofcode-2018/blob/master/day-04/day-04.py
     # data transformation
-    number_players, last_marble_worth_point = map(int, raw_nodes[0])
+    return map(int, raw_nodes[0])
+
+
+def day_9_part_1(text):
+    # data retrieve
+    number_players, last_marble_worth_point = data_retrieve(text)
     # data modelisation
     marble_game = MarbleGame(number_players, last_marble_worth_point)
     # data analysis
@@ -202,8 +209,7 @@ class TestDay9part1(unittest.TestCase):
         text = input_file()
         res = output_file()
         pred = day_9_part_1(text)
-        print(pred)
-        #assert(pred == res[0])
+        assert(pred == res[0])
 
 
 if __name__ == '__main__':
