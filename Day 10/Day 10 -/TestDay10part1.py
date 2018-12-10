@@ -1,12 +1,17 @@
 import unittest
+import numpy as np
+import sys
+import time
+from parse import parse
+import re
 
 
 def input_file():
     # return the input file in a text
     file = open('input', 'r')
-    lines = [line.rstrip('\n') for line in file]
+    text = file.read()
     file.close()
-    return lines
+    return text
 
 
 def output_file():
@@ -17,47 +22,155 @@ def output_file():
     return res
 
 
-class Node:
+class Position:
+    # class that illustrate a point
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def get_position(self):
+        # return the current position
+        return self.x, self.y
+
+    def get_x(self):
+        # return the current position
+        return self.x
+
+    def get_y(self):
+        # return the current position
+        return self.y
+
+    def set_position(self, x, y):
+        # set the current position
+        self.x = x
+        self.y = y
+
+    def move(self, vx, vy):
+        # move into the next position using
+        self.x += vx
+        self.y += vy
+
+
+class Velocity:
+    # class that illustrate a velocity
+    def __init__(self, vx, vy):
+        self.vx = vx
+        self.vy = vy
+
+    def get_velocity(self):
+        # return the velocity
+        return self.vx, self.vy
+
+
+class Cloud_point:
     # class that illustrate a node containing header, child nodes and metadata entries
-    def __init__(self, num_node):
-        self.num_node = num_node
+    def __init__(self, position, velocity):
+        self.position = position
+        self.velocity = velocity
+
+    def step(self):
+        # get the current velocity
+        vx, vy = self.velocity.get_velocity()
+        # move into the next position
+        self.position.move(vx, vy)
 
 
-class MetadataSearcher:
-    # class to transform a line into nodes using an iterator to browse the numbers
-    def __init__(self, numbers):
-        # convert string list into int list
-        self.numbers = list(map(int, numbers))
+class Cloud:
+    # class that illustrate all the points of the cloud with the respectives velocities
+    def __init__(self, cloud_points, velocities):
+        self.cloud_points = cloud_points
+        self.velocities = velocities
+        self.max_y, self.max_x = self.get_dimension_max()
+        self.cloud = np.full((self.max_y, self.max_x), False)
+        self.string_cloud = ""
 
-    def exec(self):
-        # create the root node
-        root_node = Node(*self.create_root())
-        # add it on the list of node
-        self.add_node(root_node)
-        # call the recursive function for the first time using root_node
-        self.find_children(root_node.get_child_nodes())
+    def step_cloud(self):
+        # print the cloud
+        self.print_cloud()
+        # move all cloud by one step
+        for i in range(len(self.cloud_points)):
+            self.cloud_points[i].step()
+        # wait
+        time.sleep(1)
+        # flush stdout
+        sys.stdout.flush()
+
+    def refresh_cloud_points(self):
+        self.cloud = np.full((self.max_y, self.max_x), False)
+        for cloud_point in self.cloud_points:
+            self.cloud[cloud_point.get_y()][cloud_point.get_x()] = True
+
+    def get_dimension_max(self):
+        # get the max x and y of the cloud
+        max_x, max_y = (0, int(float('inf')))
+        for i in range(len(self.cloud_points)):
+            if max_x < self.cloud_points[i].get_x():
+                max_x = self.cloud_points[i].get_x()
+            if max_y > self.cloud_points[i].get_y():
+                max_y = self.cloud_points[i].get_y()
+        return max_y, max_x
+
+    def print_cloud(self):
+        # print the cloud using array of points
+        self.refresh_cloud_points()
+        # get number line of cloud
+        number_line_cloud = self.cloud.shape[1]
+        # get number column of cloud
+        number_column_cloud = self.cloud.shape[0]
+        string_cloud = ""
+        for i in range(number_line_cloud):
+            for j in range(number_column_cloud):
+                if self.cloud_points[i][j]:
+                    string_cloud += "#"
+                else:
+                    string_cloud += "."
+            string_cloud += "\n"
+        print(string_cloud)
+
+    def exec(self, time):
+        # execute the print cloud step by step
+        for i in range(time):
+            self.step_cloud()
 
 
-def day_10_part_1(lines):
+def data_retrieve(text):
+    # return the new text traited
+    data = [tuple(parse("position=< {:d}, {:d}> velocity=< {:d}, {:d}>", l)) for l in
+                 text.split('\n')]
+    return data
+
+
+def data_preparation(data):
+    # return the cloud points and velocities associated
+    cloud_points = []
+    velocities = []
+    # fufill the cloud points and velocities using input text
+    for raw in data:
+        cloud_points.append(Cloud_point(raw[0], raw[1]))
+        velocities.append(Velocity(raw[2], raw[3]))
+    return cloud_points, velocities
+
+
+def day_10_part_1(text):
     # data retrieve
-    numbers = lines[0].split(' ')
+    data = data_retrieve(text)
     # data preparation
-    metadata_searcher = MetadataSearcher(numbers)
+    cloud_points, velocities = data_preparation(text)
     # data modelisation
-    metadata_searcher.exec()
+    cloud = Cloud(cloud_points, velocities)
     # data analyse
-    sum_metadata_entries = metadata_searcher.get_sum_metadata_entries()
+    cloud.exec()
     # data visualize
     #metadata_searcher.print_node()
-    return str(sum_metadata_entries)
+    return str(0)
 
 
 class TestDay10part1(unittest.TestCase):
 
     def test_day_10_part_1(self):
-        lines = input_file()
+        text = input_file()
         res = output_file()
-        pred = day_10_part_1(lines)
+        pred = day_10_part_1(text)
         assert(pred == res[0])
 
 
