@@ -73,13 +73,15 @@ class Cloud_point:
         # move into the next position
         self.position.move(vx, vy)
 
-    def get_x(self):
+    def get_position_x(self):
         # return the x position
         return self.position.get_x()
 
-    def get_y(self):
+    def get_position_y(self):
         # return the y position
         return self.position.get_y()
+# TODO far left (negative) or right (positive)
+# TODO far up (negative) or down (positive)
 
 
 class Cloud:
@@ -105,16 +107,24 @@ class Cloud:
     def refresh_cloud_points(self):
         self.cloud = np.full((self.max_y, self.max_x), False)
         for cloud_point in self.cloud_points:
-            self.cloud[cloud_point.get_y()][cloud_point.get_x()] = True
+            try:
+                print(self.cloud.shape)
+                print(cloud_point.get_position_y())
+                print(cloud_point.get_position_x())
+                # condition if the point is on the picture
+                if cloud_point.get_position_y() < self.cloud.shape[0] and cloud_point.get_position_x() < self.cloud.shape[1]:
+                    self.cloud[cloud_point.get_position_y()][cloud_point.get_position_x()] = True
+            except ValueError:
+                continue
 
     def get_dimension_max(self):
         # get the max x and y of the cloud
-        max_x, max_y = (0, 1000000)
+        max_x, max_y = (0, 0)
         for i in range(len(self.cloud_points)):
-            if max_x < self.cloud_points[i].get_x():
-                max_x = self.cloud_points[i].get_x()
-            if max_y > self.cloud_points[i].get_y():
-                max_y = self.cloud_points[i].get_y()
+            if max_x < self.cloud_points[i].get_position_x():
+                max_x = self.cloud_points[i].get_position_x()
+            if max_y < self.cloud_points[i].get_position_y():
+                max_y = self.cloud_points[i].get_position_y()
         return max_y, max_x
 
     def print_cloud(self):
@@ -134,7 +144,7 @@ class Cloud:
             string_cloud += "\n"
         print(string_cloud)
 
-    def exec(self, time):
+    def exec(self, time=10):
         # execute the print cloud step by step
         for i in range(time):
             self.step_cloud()
@@ -166,7 +176,7 @@ def day_10_part_1(lines):
     # data modelisation
     cloud = Cloud(cloud_points, velocities)
     # data analyse
-    cloud.exec()
+    cloud.exec(10)
     # data visualize
     #metadata_searcher.print_node()
     return str(0)
