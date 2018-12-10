@@ -2,16 +2,15 @@ import unittest
 import numpy as np
 import sys
 import time
-from parse import parse
 import re
 
 
 def input_file():
     # return the input file in a text
     file = open('input', 'r')
-    text = file.read()
+    lines = [line.rstrip('\n') for line in file]
     file.close()
-    return text
+    return lines
 
 
 def output_file():
@@ -74,6 +73,14 @@ class Cloud_point:
         # move into the next position
         self.position.move(vx, vy)
 
+    def get_x(self):
+        # return the x position
+        return self.position.get_x()
+
+    def get_y(self):
+        # return the y position
+        return self.position.get_y()
+
 
 class Cloud:
     # class that illustrate all the points of the cloud with the respectives velocities
@@ -102,7 +109,7 @@ class Cloud:
 
     def get_dimension_max(self):
         # get the max x and y of the cloud
-        max_x, max_y = (0, int(float('inf')))
+        max_x, max_y = (0, 1000000)
         for i in range(len(self.cloud_points)):
             if max_x < self.cloud_points[i].get_x():
                 max_x = self.cloud_points[i].get_x()
@@ -133,10 +140,11 @@ class Cloud:
             self.step_cloud()
 
 
-def data_retrieve(text):
-    # return the new text traited
-    data = [tuple(parse("position=< {:d}, {:d}> velocity=< {:d}, {:d}>", l)) for l in
-                 text.split('\n')]
+def data_retrieve(lines):
+    # return the new lines traited
+    data = []
+    for line in lines:
+        data.append([int(d) for d in re.findall(r'-?\d+', line)])
     return data
 
 
@@ -146,16 +154,15 @@ def data_preparation(data):
     velocities = []
     # fufill the cloud points and velocities using input text
     for raw in data:
-        cloud_points.append(Cloud_point(raw[0], raw[1]))
-        velocities.append(Velocity(raw[2], raw[3]))
+        cloud_points.append(Cloud_point(Position(raw[0], raw[1]), Velocity(raw[2], raw[3])))
     return cloud_points, velocities
 
 
-def day_10_part_1(text):
+def day_10_part_1(lines):
     # data retrieve
-    data = data_retrieve(text)
+    data = data_retrieve(lines)
     # data preparation
-    cloud_points, velocities = data_preparation(text)
+    cloud_points, velocities = data_preparation(data)
     # data modelisation
     cloud = Cloud(cloud_points, velocities)
     # data analyse
@@ -168,9 +175,9 @@ def day_10_part_1(text):
 class TestDay10part1(unittest.TestCase):
 
     def test_day_10_part_1(self):
-        text = input_file()
+        lines = input_file()
         res = output_file()
-        pred = day_10_part_1(text)
+        pred = day_10_part_1(lines)
         assert(pred == res[0])
 
 
