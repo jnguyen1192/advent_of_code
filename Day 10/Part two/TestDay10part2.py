@@ -177,7 +177,6 @@ class Cloud:
         # execute the print cloud step by step
         i = 0
         while True:
-            i += 1
             # get dimension shape
             old_x, old_y = self.get_shape_cloud_dimension()
             # use velocity on cloud
@@ -185,6 +184,7 @@ class Cloud:
             # thx nico
             curr_x, curr_y = self.get_shape_cloud_dimension()
             if curr_x < old_x and curr_y < old_y:
+                i += 1
                 continue
             else:
                 self.final_step = i
@@ -256,8 +256,6 @@ class TestDay10part2(unittest.TestCase):
         lines = input_file()
         res = output_file()
         pred = day_10_part_2(lines)
-        print(pred)
-        print(res)
         assert(pred == res)
 
 
