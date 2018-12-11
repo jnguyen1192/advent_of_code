@@ -37,8 +37,8 @@ class Fuel:
     def get_filter_power_level(self, x, y):
         # return the power level of each filter
         sum_power_level = 0
-        for y_ in range(y, y + 3):
-            for x_ in range(x, x + 3):
+        for y_ in range(y, y + self.f_n):
+            for x_ in range(x, x + self.f_n):
                 sum_power_level += self.grid_power_level[y_][x_]
         return sum_power_level
 
@@ -82,6 +82,7 @@ class Fuel:
         return self.max_x+1, self.max_y+1
 
 
+
 def data_retrieve(lines):
     # return the new lines traited
     return lines
@@ -112,8 +113,8 @@ class TestDay10part1(unittest.TestCase):
         lines = input_file()
         res = output_file()
         pred = day_11_part_1(lines)
-        print(pred)
-        #assert(pred == res)
+        #print(pred)
+        assert(pred == res)
 
 
 if __name__ == '__main__':
