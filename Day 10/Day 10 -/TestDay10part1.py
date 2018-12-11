@@ -1,7 +1,5 @@
 import unittest
 import numpy as np
-import sys
-import time
 import re
 
 
@@ -73,6 +71,12 @@ class Cloud_point:
         # move into the next position
         self.position.move(vx, vy)
 
+    def back_step(self):
+        # get the current velocity
+        vx, vy = self.velocity.get_velocity()
+        # move into the next position
+        self.position.move(-vx, -vy)
+
     def get_position_x(self):
         # return the x position
         return self.position.get_x()
@@ -92,25 +96,14 @@ class Cloud:
         self.string_cloud = ""
 
     def step_cloud(self):
-        # print the cloud
-        self.print_cloud()
         # move all cloud by one step
         for i in range(len(self.cloud_points)):
             self.cloud_points[i].step()
-        # wait
-        time.sleep(1)
-        # flush stdout
-        sys.stdout.flush()
 
-    def refresh_cloud_points(self):
-        self.cloud = np.full((self.max_y, self.max_x), False)
-        for cloud_point in self.cloud_points:
-            try:
-                # condition if the point is on the picture
-                if cloud_point.get_position_y() < self.cloud.shape[0] and cloud_point.get_position_x() < self.cloud.shape[1]:
-                    self.cloud[cloud_point.get_position_y()][cloud_point.get_position_x()] = True
-            except ValueError:
-                continue
+    def back_step_cloud(self):
+        # move all cloud by one step
+        for i in range(len(self.cloud_points)):
+            self.cloud_points[i].back_step()
 
     def get_dimension_max(self):
         # get the max x and y of the cloud
@@ -120,21 +113,18 @@ class Cloud:
                 max_x = self.cloud_points[i].get_position_x()
             if max_y < self.cloud_points[i].get_position_y():
                 max_y = self.cloud_points[i].get_position_y()
-        return max_y+1, max_x+1
+        return max_y, max_x
 
-    def print_cloud(self):
+    def str_cloud(self, max_x, min_x, max_y, min_y):
         # print the cloud using array of points
-        self.refresh_cloud_points()
+        self.cloud = np.full((max_y - min_y, max_x - min_x), False)
         # get number line of cloud
         number_line_cloud = self.cloud.shape[1]
         # get number column of cloud
         number_column_cloud = self.cloud.shape[0]
         # add cloud_points to cloud
         for cloud_point in self.cloud_points:
-            #print(self.cloud.shape)
-            #print(cloud_point.get_position_x())
-            #print(cloud_point.get_position_y())
-            self.cloud[cloud_point.get_position_y()-1][cloud_point.get_position_x()-1] = True
+            self.cloud[cloud_point.get_position_y()-1-min_y][cloud_point.get_position_x()-1-min_x] = True
         # print the cloud
         string_cloud = ""
         for i in range(number_column_cloud):
@@ -144,12 +134,63 @@ class Cloud:
                 else:
                     string_cloud += "."
             string_cloud += "\n"
-        print(string_cloud)
+        return string_cloud
 
-    def exec(self, time=10):
+    def get_shape_cloud_dimension(self):
+        # return the border min max of x y
+        max_x, max_y = (0, 0)
+        min_x, min_y = (10000000, 10000000)
+        # get the border to know how positionning the points
+        for cloud_point in self.cloud_points:
+            if cloud_point.get_position_x() > max_x:
+                max_x = cloud_point.get_position_x()
+            if cloud_point.get_position_x() < min_x:
+                min_x = cloud_point.get_position_x()
+            if cloud_point.get_position_y() > max_y:
+                max_y = cloud_point.get_position_y()
+            if cloud_point.get_position_y() < min_y:
+                min_y = cloud_point.get_position_y()
+        return max_x - min_x, max_y - min_y
+
+    def get_coordonate_cloud_dimension(self):
+        # return the border min max of x y
+        max_x, max_y = (0, 0)
+        min_x, min_y = (10000000, 10000000)
+        # get the border to know how positionning the points
+        for cloud_point in self.cloud_points:
+            if cloud_point.get_position_x() > max_x:
+                max_x = cloud_point.get_position_x()
+            if cloud_point.get_position_x() < min_x:
+                min_x = cloud_point.get_position_x()
+            if cloud_point.get_position_y() > max_y:
+                max_y = cloud_point.get_position_y()
+            if cloud_point.get_position_y() < min_y:
+                min_y = cloud_point.get_position_y()
+        return max_x, min_x-1, max_y, min_y-1
+
+    def exec(self):
         # execute the print cloud step by step
-        for i in range(time):
+        i = 0
+        while True:
+            print("step ", i)
+            i += 1
+            # get dimension shape
+            old_x, old_y = self.get_shape_cloud_dimension()
+
             self.step_cloud()
+            # thx nico
+            curr_x, curr_y = self.get_shape_cloud_dimension()
+            print("curr ", curr_x, " ", curr_y)
+            if curr_x < old_x and curr_y < old_y:
+                continue
+            else:
+                # print the cloud
+                with open("Output.txt", "w") as text_file:
+                    self.back_step_cloud()
+                    max_x, min_x, max_y, min_y = self.get_coordonate_cloud_dimension()
+                    old_str_cloud = self.str_cloud(max_x, min_x, max_y, min_y)
+                    print(old_str_cloud, file=text_file)
+                break
 
 
 def data_retrieve(lines):
@@ -160,11 +201,8 @@ def data_retrieve(lines):
     return data
 
 
-def data_preparation(data):
-    # return the cloud points and velocities associated
-    cloud_points = []
-    velocities = []
-    # transform points to positions
+def get_border(data):
+    # return the border min max of x y
     max_x, max_y = (0, 0)
     min_x, min_y = (10000000, 10000000)
     # get the border to know how positionning the points
@@ -177,6 +215,15 @@ def data_preparation(data):
             max_y = raw[1]
         if raw[1] < min_y:
             min_y = raw[1]
+    return max_x, min_x, max_y, min_y
+
+
+def data_preparation(data):
+    # return the cloud points and velocities associated
+    cloud_points = []
+    velocities = []
+    # transform points to positions
+    max_x, min_x, max_y, min_y = get_border(data)
     # using those borders, we get new points
     # we only have to add the opposite min to each x and y value
     # fufill the cloud points and velocities using input text
@@ -193,7 +240,7 @@ def day_10_part_1(lines):
     # data modelisation
     cloud = Cloud(cloud_points, velocities)
     # data analyse
-    cloud.exec(5)
+    cloud.exec()
     # data visualize
     #metadata_searcher.print_node()
     return str(0)
