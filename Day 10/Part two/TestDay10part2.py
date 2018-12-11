@@ -1,4 +1,6 @@
 import unittest
+import numpy as np
+import re
 
 
 def input_file():
@@ -12,52 +14,251 @@ def input_file():
 def output_file():
     # read line of output file
     file = open('output', 'r')
-    res = [line.rstrip('\n') for line in file]
+    res = file.read()
     file.close()
     return res
 
 
-class Node:
+class Position:
+    # class that illustrate a point
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def get_position(self):
+        # return the current position
+        return self.x, self.y
+
+    def get_x(self):
+        # return the current position
+        return self.x
+
+    def get_y(self):
+        # return the current position
+        return self.y
+
+    def set_position(self, x, y):
+        # set the current position
+        self.x = x
+        self.y = y
+
+    def move(self, vx, vy):
+        # move into the next position using
+        self.x += vx
+        self.y += vy
+
+
+class Velocity:
+    # class that illustrate a velocity
+    def __init__(self, vx, vy):
+        self.vx = vx
+        self.vy = vy
+
+    def get_velocity(self):
+        # return the velocity
+        return self.vx, self.vy
+
+
+class Cloud_point:
     # class that illustrate a node containing header, child nodes and metadata entries
-    def __init__(self, num_node):
-        self.num_node = num_node
+    def __init__(self, position, velocity):
+        self.position = position
+        self.velocity = velocity
+
+    def step(self):
+        # get the current velocity
+        vx, vy = self.velocity.get_velocity()
+        # move into the next position
+        self.position.move(vx, vy)
+
+    def back_step(self):
+        # get the current velocity
+        vx, vy = self.velocity.get_velocity()
+        # move into the next position
+        self.position.move(-vx, -vy)
+
+    def get_position_x(self):
+        # return the x position
+        return self.position.get_x()
+
+    def get_position_y(self):
+        # return the y position
+        return self.position.get_y()
 
 
-class MetadataSearcher:
-    # class to transform a line into nodes using an iterator to browse the numbers
-    def __init__(self, numbers):
-        # convert string list into int list
-        self.numbers = list(map(int, numbers))
+class Cloud:
+    # class that illustrate all the points of the cloud with the respectives velocities
+    def __init__(self, cloud_points, velocities):
+        self.cloud_points = cloud_points
+        self.velocities = velocities
+        self.max_y, self.max_x = self.get_dimension_max()
+        self.cloud = np.full((self.max_y, self.max_x), False)
+        self.string_cloud = ""
+        self.final_step = 0
+
+    def visualize(self):
+        # return the final step
+        return self.final_step
+
+    def step_cloud(self):
+        # move all cloud by one step
+        for i in range(len(self.cloud_points)):
+            self.cloud_points[i].step()
+
+    def back_step_cloud(self):
+        # inverse move all cloud by one step
+        for i in range(len(self.cloud_points)):
+            self.cloud_points[i].back_step()
+
+    def get_dimension_max(self):
+        # get the max x and y of the cloud
+        max_x, max_y = (0, 0)
+        for i in range(len(self.cloud_points)):
+            if max_x < self.cloud_points[i].get_position_x():
+                max_x = self.cloud_points[i].get_position_x()
+            if max_y < self.cloud_points[i].get_position_y():
+                max_y = self.cloud_points[i].get_position_y()
+        return max_y, max_x
+
+    def str_cloud(self, max_x, min_x, max_y, min_y):
+        # return the cloud in a string from a little array
+        self.cloud = np.full((max_y - min_y, max_x - min_x), False)
+        # get number line of cloud
+        number_line_cloud = self.cloud.shape[1]
+        # get number column of cloud
+        number_column_cloud = self.cloud.shape[0]
+        # add cloud_points to cloud
+        for cloud_point in self.cloud_points:
+            self.cloud[cloud_point.get_position_y()-1-min_y][cloud_point.get_position_x()-1-min_x] = True
+        # create the cloud
+        string_cloud = ""
+        for i in range(number_column_cloud):
+            for j in range(number_line_cloud):
+                if self.cloud[i][j]:
+                    string_cloud += "#"
+                else:
+                    string_cloud += "."
+            string_cloud += "\n"
+        return string_cloud
+
+    def get_shape_cloud_dimension(self):
+        # return the border min max of x y to know where we will end the execution
+        max_x, max_y = (0, 0)
+        min_x, min_y = (10000000, 10000000)
+        # get the border to know how positionning the points
+        for cloud_point in self.cloud_points:
+            if cloud_point.get_position_x() > max_x:
+                max_x = cloud_point.get_position_x()
+            if cloud_point.get_position_x() < min_x:
+                min_x = cloud_point.get_position_x()
+            if cloud_point.get_position_y() > max_y:
+                max_y = cloud_point.get_position_y()
+            if cloud_point.get_position_y() < min_y:
+                min_y = cloud_point.get_position_y()
+        return max_x - min_x, max_y - min_y
+
+    def get_coordonate_cloud_dimension(self):
+        # return the border min max of x y to calculate the result
+        max_x, max_y = (0, 0)
+        min_x, min_y = (10000000, 10000000)
+        # get the border to know how positionning the points
+        for cloud_point in self.cloud_points:
+            if cloud_point.get_position_x() > max_x:
+                max_x = cloud_point.get_position_x()
+            if cloud_point.get_position_x() < min_x:
+                min_x = cloud_point.get_position_x()
+            if cloud_point.get_position_y() > max_y:
+                max_y = cloud_point.get_position_y()
+            if cloud_point.get_position_y() < min_y:
+                min_y = cloud_point.get_position_y()
+        return max_x, min_x-1, max_y, min_y-1
 
     def exec(self):
-        # create the root node
-        root_node = Node(*self.create_root())
-        # add it on the list of node
-        self.add_node(root_node)
-        # call the recursive function for the first time using root_node
-        self.find_children(root_node.get_child_nodes())
+        # execute the print cloud step by step
+        i = 0
+        while True:
+            i += 1
+            # get dimension shape
+            old_x, old_y = self.get_shape_cloud_dimension()
+            # use velocity on cloud
+            self.step_cloud()
+            # thx nico
+            curr_x, curr_y = self.get_shape_cloud_dimension()
+            if curr_x < old_x and curr_y < old_y:
+                continue
+            else:
+                self.final_step = i
+                # get the cloud shape
+                self.back_step_cloud()
+                # get the final coordonate
+                max_x, min_x, max_y, min_y = self.get_coordonate_cloud_dimension()
+                # get the final cloud
+                self.string_cloud = self.str_cloud(max_x, min_x, max_y, min_y)
+                break
+
+
+def data_retrieve(lines):
+    # return the new lines traited
+    data = []
+    for line in lines:
+        data.append([int(d) for d in re.findall(r'-?\d+', line)])
+    return data
+
+
+def get_border(data):
+    # return the border min max of x y
+    max_x, max_y = (0, 0)
+    min_x, min_y = (10000000, 10000000)
+    # get the border to know how positionning the points
+    for raw in data:
+        if raw[0] > max_x:
+            max_x = raw[0]
+        if raw[0] < min_x:
+            min_x = raw[0]
+        if raw[1] > max_y:
+            max_y = raw[1]
+        if raw[1] < min_y:
+            min_y = raw[1]
+    return max_x, min_x, max_y, min_y
+
+
+def data_preparation(data):
+    # return the cloud points and velocities associated
+    cloud_points = []
+    velocities = []
+    # transform points to positions
+    max_x, min_x, max_y, min_y = get_border(data)
+    # using those borders, we get new points
+    # we only have to add the opposite min to each x and y value
+    # fufill the cloud points and velocities using input text
+    for raw in data:
+        cloud_points.append(Cloud_point(Position(raw[0]-min_x, raw[1]-min_y), Velocity(raw[2], raw[3])))
+    return cloud_points, velocities
 
 
 def day_10_part_2(lines):
     # data retrieve
-    numbers = lines[0].split(' ')
+    data = data_retrieve(lines)
     # data preparation
-    metadata_searcher = MetadataSearcher(numbers)
+    cloud_points, velocities = data_preparation(data)
     # data modelisation
-    metadata_searcher.exec()
+    cloud = Cloud(cloud_points, velocities)
     # data analyse
-    sum_metadata_entries = metadata_searcher.get_sum_metadata_entries()
+    cloud.exec()
     # data visualize
-    # metadata_searcher.print_node()
-    return str(sum_metadata_entries)
+    nb_step = cloud.visualize()
+    return str(nb_step)
 
 
 class TestDay10part2(unittest.TestCase):
+
     def test_day_10_part_2(self):
         lines = input_file()
         res = output_file()
         pred = day_10_part_2(lines)
-        assert (pred == res[0])
+        print(pred)
+        print(res)
+        assert(pred == res)
 
 
 if __name__ == '__main__':
