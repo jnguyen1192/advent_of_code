@@ -115,7 +115,7 @@ def data_preparation(data):
     return int(data[0])
 
 
-def day_11_part_2(lines):
+def day_12_part_2(lines):
     # data retrieve
     data = data_retrieve(lines)
     # data preparation
@@ -129,11 +129,11 @@ def day_11_part_2(lines):
     return str_result
 
 
-class TestDay11part2(unittest.TestCase):
-    def test_day_11_part_2(self):
+class TestDay12part2(unittest.TestCase):
+    def test_day_12_part_2(self):
         lines = input_file()
         res = output_file()
-        pred = day_11_part_2(lines)
+        pred = day_12_part_2(lines)
         assert(pred == res)
 
 

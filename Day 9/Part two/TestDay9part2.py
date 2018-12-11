@@ -99,7 +99,7 @@ class MarbleGame:
         # keep marble that would be placed to points
         keep_marble_points_that_would_be_placed = self.get_current_marble_points()  #  + 1 because it is the next
         # add this marble points into the current player score
-        if current_num_player == 228:
+        if current_num_player == 36:
             print("[", current_num_player, "]   earns", keep_marble_points_that_would_be_placed, ' au tour ', self.nb_tour)
         self.players[current_num_player].add_point(keep_marble_points_that_would_be_placed)
         # get back from 7 location from current location marble
@@ -202,7 +202,7 @@ def day_9_part_2(text):
     # data retrieve
     number_players, last_marble_worth_point = data_retrieve(text)
     # data modelisation
-    marble_game = MarbleGame(number_players, int(last_marble_worth_point*1))  # PART 2
+    marble_game = MarbleGame(number_players, int(last_marble_worth_point*50))  # PART 2
     # data analysis
     marble_game.exec(False)
     # data visualisation
