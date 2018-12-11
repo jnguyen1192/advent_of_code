@@ -14,7 +14,7 @@ def input_file():
 def output_file():
     # read line of output file
     file = open('output', 'r')
-    res = [line.rstrip('\n') for line in file]
+    res = file.read()
     file.close()
     return res
 
@@ -95,13 +95,17 @@ class Cloud:
         self.cloud = np.full((self.max_y, self.max_x), False)
         self.string_cloud = ""
 
+    def visualize(self):
+        # return the final string
+        return self.string_cloud
+
     def step_cloud(self):
         # move all cloud by one step
         for i in range(len(self.cloud_points)):
             self.cloud_points[i].step()
 
     def back_step_cloud(self):
-        # move all cloud by one step
+        # inverse move all cloud by one step
         for i in range(len(self.cloud_points)):
             self.cloud_points[i].back_step()
 
@@ -116,7 +120,7 @@ class Cloud:
         return max_y, max_x
 
     def str_cloud(self, max_x, min_x, max_y, min_y):
-        # print the cloud using array of points
+        # return the cloud in a string from a little array
         self.cloud = np.full((max_y - min_y, max_x - min_x), False)
         # get number line of cloud
         number_line_cloud = self.cloud.shape[1]
@@ -125,7 +129,7 @@ class Cloud:
         # add cloud_points to cloud
         for cloud_point in self.cloud_points:
             self.cloud[cloud_point.get_position_y()-1-min_y][cloud_point.get_position_x()-1-min_x] = True
-        # print the cloud
+        # create the cloud
         string_cloud = ""
         for i in range(number_column_cloud):
             for j in range(number_line_cloud):
@@ -137,7 +141,7 @@ class Cloud:
         return string_cloud
 
     def get_shape_cloud_dimension(self):
-        # return the border min max of x y
+        # return the border min max of x y to know where we will end the execution
         max_x, max_y = (0, 0)
         min_x, min_y = (10000000, 10000000)
         # get the border to know how positionning the points
@@ -153,7 +157,7 @@ class Cloud:
         return max_x - min_x, max_y - min_y
 
     def get_coordonate_cloud_dimension(self):
-        # return the border min max of x y
+        # return the border min max of x y to calculate the result
         max_x, max_y = (0, 0)
         min_x, min_y = (10000000, 10000000)
         # get the border to know how positionning the points
@@ -172,24 +176,23 @@ class Cloud:
         # execute the print cloud step by step
         i = 0
         while True:
-            print("step ", i)
+            #print("step ", i)
             i += 1
             # get dimension shape
             old_x, old_y = self.get_shape_cloud_dimension()
-
+            # use velocity on cloud
             self.step_cloud()
             # thx nico
             curr_x, curr_y = self.get_shape_cloud_dimension()
-            print("curr ", curr_x, " ", curr_y)
             if curr_x < old_x and curr_y < old_y:
                 continue
             else:
-                # print the cloud
-                with open("Output.txt", "w") as text_file:
-                    self.back_step_cloud()
-                    max_x, min_x, max_y, min_y = self.get_coordonate_cloud_dimension()
-                    old_str_cloud = self.str_cloud(max_x, min_x, max_y, min_y)
-                    print(old_str_cloud, file=text_file)
+                # get the cloud shape
+                self.back_step_cloud()
+                # get the final coordonate
+                max_x, min_x, max_y, min_y = self.get_coordonate_cloud_dimension()
+                # get the final cloud
+                self.string_cloud = self.str_cloud(max_x, min_x, max_y, min_y)
                 break
 
 
@@ -242,8 +245,8 @@ def day_10_part_1(lines):
     # data analyse
     cloud.exec()
     # data visualize
-    #metadata_searcher.print_node()
-    return str(0)
+    str_cloud = cloud.visualize()
+    return str_cloud
 
 
 class TestDay10part1(unittest.TestCase):
@@ -252,7 +255,7 @@ class TestDay10part1(unittest.TestCase):
         lines = input_file()
         res = output_file()
         pred = day_10_part_1(lines)
-        #assert(pred == res[0])
+        assert(pred == res)
 
 
 if __name__ == '__main__':
