@@ -30,7 +30,7 @@ class GenerationPlant:
         self.generation = []
         self.constraints = constraints
         self.number_of_generation = number_of_generation
-        self.beginning = 0
+        self.beginning = 0  # to the border
 
     def sum_number_pot_containing__plants(self):
         # return number of plant of the current generation
@@ -47,7 +47,7 @@ class GenerationPlant:
         sum_pots = 0
         for key, pot in enumerate(generation):
             if pot == "#":
-                sum_pots += key - 2  # because first pot is -2
+                sum_pots += key + self.beginning  # because first pot is -2
         return sum_pots
 
     def next_generation(self):
@@ -61,7 +61,6 @@ class GenerationPlant:
         # TODO refactoring
         # the iterator for each rules applied
         ind_beg = generation.find("#")
-        print(ind_beg)
         generation = "...." + generation[ind_beg:]
         # reverse generation
         rev_generation = generation[::-1]
@@ -97,7 +96,10 @@ class GenerationPlant:
             if not match_find:
                 generation_list.append(".")
         generation_after = "".join(generation_list)
-        #print(len(self.generation), ":", generation_after)
+        if generation_after.find("#") < 2:
+            self.beginning -= 1
+        if generation_after.find("#") > 2:
+            self.beginning += 1
         # add on list generation the current generation
         self.generation.append(generation_after)
 
@@ -113,6 +115,7 @@ class GenerationPlant:
 
     def visualize(self):
         # return the result
+        print("self.beginning ", self.beginning)
         return self.sum_number_pot_containing__plants()
 
 
@@ -139,7 +142,7 @@ def day_12_part_1(lines):
     # data preparation
     input_line, constraints = data_preparation(input_line, constraints)
     # data modelisation
-    plants_life_being = GenerationPlant(input_line, constraints, 20)
+    plants_life_being = GenerationPlant(input_line, constraints, 50000000000)
     # data analyse
     plants_life_being.execute()
     # data visualize
