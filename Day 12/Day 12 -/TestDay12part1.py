@@ -1,5 +1,4 @@
 import unittest
-import numpy as np
 
 
 def input_file():
@@ -34,7 +33,6 @@ class GenerationPlant:
 
     def sum_number_pot_containing__plants(self):
         # return number of plant of the current generation
-        # TODO refactoring
         # the iterator for each rules applied
         ind_beg = self.generation[-1].find("#")
         generation = self.generation[-1][ind_beg:]
@@ -56,9 +54,7 @@ class GenerationPlant:
         # apply rule
         self.apply_rule(current_generation)
 
-    def apply_rule(self, generation):
-        # apply rules to the generation
-        # TODO refactoring
+    def rebuild_generation(self, generation):
         # the iterator for each rules applied
         ind_beg = generation.find("#")
         generation = "...." + generation[ind_beg:]
@@ -67,18 +63,11 @@ class GenerationPlant:
         ind_beg = rev_generation.find("#")
         generation = "...." + rev_generation[ind_beg:]
         # rebuild generation
-        generation = generation[::-1]
-        """
-        if generation[0] == "#":
-            generation = "...." + generation
-        elif generation[0] == "." and generation[1] == "#":
-            generation = "." + generation
-        if generation[-1] == "#":
-            generation = generation + "...."
-        elif generation[-1] == "." and generation[-2] == "#":
-            generation = generation + "."
-        """
-        #print("before", generation)
+        return generation[::-1]
+
+    def apply_rule(self, generation):
+        # apply rules to the generation
+        generation = self.rebuild_generation(generation)
         generation_list = []
         # begin at the right pot and end at the right pot
         for i in range(3, len(generation)+1):
@@ -107,15 +96,12 @@ class GenerationPlant:
         # process on plants
         # init the generation list
         self.generation.append(self.input_line)
-
-        print("0  ", self.input_line)
         # process with number of generation
         for i in range(self.number_of_generation):
             self.next_generation()
 
     def visualize(self):
         # return the result
-        print("self.beginning ", self.beginning)
         return self.sum_number_pot_containing__plants()
 
 
@@ -142,7 +128,7 @@ def day_12_part_1(lines):
     # data preparation
     input_line, constraints = data_preparation(input_line, constraints)
     # data modelisation
-    plants_life_being = GenerationPlant(input_line, constraints, 50000000000)
+    plants_life_being = GenerationPlant(input_line, constraints)
     # data analyse
     plants_life_being.execute()
     # data visualize
@@ -156,8 +142,7 @@ class TestDay12part1(unittest.TestCase):
         lines = input_file()
         res = output_file()
         pred = day_12_part_1(lines)
-        print("pred ", pred)
-        #assert(pred == res)
+        assert(pred == res)
 
 
 if __name__ == '__main__':
