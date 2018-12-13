@@ -17,108 +17,83 @@ def output_file():
     return res
 
 
-class GenerationPlant:
-    # class that represent the rules for each generation of plants
-    def __init__(self, input_line, constraints, number_of_generation=20):
+class Cart:
+    """
+    A cart is represented by his coordonate and his direction,
+    its moves are specific during an intersection.
+    """
+    def __init__(self, y, x, direction):
         """
 
-        :param input_line: the plant that will have generation
-        :param constraints: the constraints for each generation
+        :param y: the coordonate y from 0 to n to the down
+        :param x: the coordonate x from 0 to n to the right
+        :param direction: the direction representing as a pick of an arrow
         """
-        self.input_line = input_line
-        self.generation = []
-        self.constraints = constraints
-        self.number_of_generation = number_of_generation
-        self.beginning = 0  # to the border
+        self.y = y
+        self.x = x
+        self.direction = direction
 
-    def sum_number_pot_containing__plants(self):
-        # return number of plant of the current generation
-        # the iterator for each rules applied
-        ind_beg = self.generation[-1].find("#")
-        generation = self.generation[-1][ind_beg:]
-        # reverse generation
-        rev_generation = generation[::-1]
-        ind_beg = rev_generation.find("#")
-        generation = rev_generation[ind_beg:]
-        # rebuild generation
-        generation = generation[::-1]
-        sum_pots = 0
-        for key, pot in enumerate(generation):
-            if pot == "#":
-                sum_pots += key + self.beginning  # because first pot is -2
-        return sum_pots
+    def get_direction(self):
+        """
+        This function is useful to get that attribute
+        :return: direction of the cart to know where it will go
+        """
+        return self.direction
 
-    def next_generation(self):
-        # build the next generation and add it on the list of generation
-        current_generation = self.generation[-1]
-        # apply rule
-        self.apply_rule(current_generation)
+    def go_east(self):
+        """
+        This function permit us to the move the at the right
+        """
+        self.x += 1
 
-    def rebuild_generation(self, generation):
-        # the iterator for each rules applied
-        ind_beg = generation.find("#")
-        generation = "...." + generation[ind_beg:]
-        # reverse generation
-        rev_generation = generation[::-1]
-        ind_beg = rev_generation.find("#")
-        generation = "...." + rev_generation[ind_beg:]
-        # rebuild generation
-        return generation[::-1]
+    def go_north(self):
+        """
+        This function permit us to move the cart up
+        """
+        self.y -= 1
 
-    def apply_rule(self, generation):
-        # apply rules to the generation
-        generation = self.rebuild_generation(generation)
-        generation_list = []
-        # begin at the right pot and end at the right pot
-        for i in range(3, len(generation)+1):
-            match_find = False
-            for key, value in self.constraints.items():
-                #print("key ", key)
-                #print("generation ", generation[i-3:i+2])
-                if key == generation[i-3:i+2]:
-                    # transform the pot
-                    generation_list.append(value)
-                    # increment the iterator
-                    match_find = True
-                    # interrupt the matcher
-                    break
-            if not match_find:
-                generation_list.append(".")
-        generation_after = "".join(generation_list)
-        if generation_after.find("#") < 2:
-            self.beginning -= 1
-        if generation_after.find("#") > 2:
-            self.beginning += 1
-        # add on list generation the current generation
-        self.generation.append(generation_after)
+    def go_west(self):
+        """
+        This function permit us to the move the at the left
+        """
+        self.x -= 1
 
-    def execute(self):
-        # process on plants
-        # init the generation list
-        self.generation.append(self.input_line)
-        # process with number of generation
-        for i in range(self.number_of_generation):
-            self.next_generation()
+    def go_south(self):
+        """
+        This function permit us to move the cart down
+        """
+        self.y += 1
 
-    def visualize(self):
-        # return the result
-        return self.sum_number_pot_containing__plants()
+    def move(self):
+        """
+        This function calculate the next position of the cart
+        :return: the next position y x of a cart
+        """
+        current_direction = self.get_direction()
+        if current_direction == ">":
+            self.go_east()
+        elif current_direction == "^":
+            self.go_north()
+        elif current_direction == "<":
+            self.go_west()
+        else:
+            self.go_south()
 
 
-def find_all_orientation(line, y, orientation):
-    obj = set()
+def find_all_direction(line, y, direction):
+    finder = False
     x = 0
-    # orientation
+    # direction
     # first iteration
-    while line.find(orientation, x) != -1:
-        x = line.find(orientation, x)
+    while line.find(direction, x) != -1:
+        x = line.find(direction, x)
         if x == -1:
             break
-        obj.add((x, y, orientation))
+        finder = y, x, direction
         x += 1
-    if len(obj) == 0:
+    if not finder:
         return 0
-    return obj
+    return tuple(finder)
 
 
 class ObjectBuilder:
@@ -126,59 +101,51 @@ class ObjectBuilder:
     def __init__(self, lines):
         self.carts = []
         self.lines = lines
+        self.carts = self.build_carts()
+        self.map = self.build_map()
+
+    def print_map(self):
+        # print the map using the matrix map
+        for index, values in enumerate(self.map):
+            print(index, "\t\t\t", values)
+
+    def print_carts(self):
+        # print the map using the matrix map
+        print(self.carts)
 
     def build_carts(self):
-        # return a list of carts as (x, y, orientation of cart)
+        # return a list of carts as (x, y, direction of cart)
         carts = []
         y = 0
         for line in self.lines:
-            right_orientation = find_all_orientation(line, y, ">")
-            if right_orientation != 0:
-                carts.append(find_all_orientation(line, y, ">"))
-            left_orientation = find_all_orientation(line, y, "<")
-            if left_orientation != 0:
-                carts.append(find_all_orientation(line, y, "<"))
-            up_orientation = find_all_orientation(line, y, "^")
-            if up_orientation != 0:
-                carts.append(find_all_orientation(line, y, "^"))
-            down_orientation = find_all_orientation(line, y, "v")
-            if down_orientation != 0:
-                carts.append(find_all_orientation(line, y, "v"))
+            right_direction = find_all_direction(line, y, ">")
+            if right_direction != 0:
+                carts.append(find_all_direction(line, y, ">"))
+            left_direction = find_all_direction(line, y, "<")
+            if left_direction != 0:
+                carts.append(find_all_direction(line, y, "<"))
+            up_direction = find_all_direction(line, y, "^")
+            if up_direction != 0:
+                carts.append(find_all_direction(line, y, "^"))
+            down_direction = find_all_direction(line, y, "v")
+            if down_direction != 0:
+                carts.append(find_all_direction(line, y, "v"))
             y += 1
-        return carts
+        return sorted(carts)
 
-    def build_curves(self):
-        curves_up_left, curves_up_right = ([], [])
-        y = 0
+    def build_map(self):
+        # return the matrix of the map
+        map = []
         for line in self.lines:
-            curves_up_left.append(find_all_orientation(line, y, "/"))
-            curves_up_right.append(find_all_orientation(line, y, '\\'))
-            y += 1
-        print(len(curves_up_left))
-        print(len(curves_up_right))
-        print(curves_up_left)
-        print(curves_up_right)
-        prob = (len(curves_up_left) + len(curves_up_right))
-        print("probably ", int((prob/4)), " curves")
-        # TODO build the curves
-        #print(len(curves_up_left), " ", len(curves_up_right))
-
-    def draw_new_curves(self):
-        # TODO draw new curves using carts and collision only
-
-
-    def build_intersec_path(self):
-        pass
-
+            line_list = []
+            for i in line:
+                line_list.append(i)
+            map.append(line_list)
+        return map
 
 
 def data_retrieve(lines):
     # return the new lines traited
-    ob = ObjectBuilder(lines)
-    # cart(x, y, orientation)
-    carts = ob.build_carts()
-    print(carts)
-    ob.build_curves()
     # count nb cart
     return lines
 
@@ -192,8 +159,11 @@ def day_13_part_1(lines):
     # data retrieve
     lines = data_retrieve(lines)
     # data preparation
-    lines= data_preparation(lines)
+    object_builder = ObjectBuilder(lines)
     # data modelisation
+    object_builder.print_map()
+    object_builder.print_carts()
+    print("First carts ", object_builder.map[15][25])
     #plants_life_being = GenerationPlant(input_line, constraints)
     # data analyse
     #plants_life_being.execute()
