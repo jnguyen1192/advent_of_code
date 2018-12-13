@@ -105,35 +105,101 @@ class GenerationPlant:
         return self.sum_number_pot_containing__plants()
 
 
+def find_all_orientation(line, y, orientation):
+    obj = set()
+    x = 0
+    # orientation
+    # first iteration
+    while line.find(orientation, x) != -1:
+        x = line.find(orientation, x)
+        if x == -1:
+            break
+        obj.add((x, y, orientation))
+        x += 1
+    if len(obj) == 0:
+        return 0
+    return obj
+
+
+class ObjectBuilder:
+    # class that permits to create all object
+    def __init__(self, lines):
+        self.carts = []
+        self.lines = lines
+
+    def build_carts(self):
+        # return a list of carts as (x, y, orientation of cart)
+        carts = []
+        y = 0
+        for line in self.lines:
+            right_orientation = find_all_orientation(line, y, ">")
+            if right_orientation != 0:
+                carts.append(find_all_orientation(line, y, ">"))
+            left_orientation = find_all_orientation(line, y, "<")
+            if left_orientation != 0:
+                carts.append(find_all_orientation(line, y, "<"))
+            up_orientation = find_all_orientation(line, y, "^")
+            if up_orientation != 0:
+                carts.append(find_all_orientation(line, y, "^"))
+            down_orientation = find_all_orientation(line, y, "v")
+            if down_orientation != 0:
+                carts.append(find_all_orientation(line, y, "v"))
+            y += 1
+        return carts
+
+    def build_curves(self):
+        curves_up_left, curves_up_right = ([], [])
+        y = 0
+        for line in self.lines:
+            curves_up_left.append(find_all_orientation(line, y, "/"))
+            curves_up_right.append(find_all_orientation(line, y, '\\'))
+            y += 1
+        print(len(curves_up_left))
+        print(len(curves_up_right))
+        print(curves_up_left)
+        print(curves_up_right)
+        prob = (len(curves_up_left) + len(curves_up_right))
+        print("probably ", int((prob/4)), " curves")
+        # TODO build the curves
+        #print(len(curves_up_left), " ", len(curves_up_right))
+
+    def draw_new_curves(self):
+        # TODO draw new curves using carts and collision only
+
+
+    def build_intersec_path(self):
+        pass
+
+
+
 def data_retrieve(lines):
     # return the new lines traited
-    string_parse = "initial state: "
-    input_line = lines[0][len(string_parse):]
-    lines.pop(0)
-    lines.pop(0)
-    constraints = {}
-    for line in lines:
-        constraints[line[:5]] = line[9]
-    return input_line, constraints
+    ob = ObjectBuilder(lines)
+    # cart(x, y, orientation)
+    carts = ob.build_carts()
+    print(carts)
+    ob.build_curves()
+    # count nb cart
+    return lines
 
 
-def data_preparation(input_line, constraints):
+def data_preparation(lines):
     # return the value of input
-    return input_line, constraints
+    return lines
 
 
 def day_13_part_1(lines):
     # data retrieve
-    input_line, constraints = data_retrieve(lines)
+    lines = data_retrieve(lines)
     # data preparation
-    input_line, constraints = data_preparation(input_line, constraints)
+    lines= data_preparation(lines)
     # data modelisation
-    plants_life_being = GenerationPlant(input_line, constraints)
+    #plants_life_being = GenerationPlant(input_line, constraints)
     # data analyse
-    plants_life_being.execute()
+    #plants_life_being.execute()
     # data visualize
-    sum_number_of_plants_last_generation = plants_life_being.visualize()
-    return str(sum_number_of_plants_last_generation)
+    #sum_number_of_plants_last_generation = plants_life_being.visualize()
+    return str(0)
 
 
 class TestDay13part1(unittest.TestCase):
