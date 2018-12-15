@@ -392,12 +392,11 @@ class MineCartMadnessManager:
                     self.there_was_a_collision()
                     # remove all carts on collision
                     self.remove_carts_on_collision(cart)
-                    if len(self.carts) == 1:
-                        self.carts[0].move()
-                        self.last_position = self.carts[0].get_position_yx()
-                        self.is_last_cart = True
-                        break
             #self.print_map_with_carts()
+            if len(self.carts) == 1:
+                self.last_position = self.carts[0].get_position_yx()
+                self.is_last_cart = True
+                break
             #turn += 1
 
     def print_map_with_carts(self, pos_x=(-1, -1)):
