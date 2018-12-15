@@ -264,6 +264,12 @@ class MineCartMadnessManager:
 
         :param carts: list of carts
         :param map: matrix of map containing turns and intersections
+
+        :param collision_position: coordonate of the first collision
+        :param last_position: coordonate of the last position of cart
+
+        :param collision: True if there was a collision
+        :param is_last_cart: True if there was only one cart alive
         """
         self.carts = carts
         self.map = map
@@ -310,26 +316,12 @@ class MineCartMadnessManager:
             next_position = curr_position[0] + 1, curr_position[1]
         return next_position
 
-    def other_cars(self, cart):
-        """
-        Get list the of other carts
-        :param cart:
-        :return: all carts except the current cart
-        """
-        from copy import deepcopy
-        other_carts = deepcopy(self.carts)
-        for c in other_carts:
-            if c.get_position_yx() == cart.get_position_yx():
-                other_carts.remove(c)
-        return other_carts
-
     def are_they_on_collision(self, cart):
         """
-        We know if it will be a collision in the next move
+        We know if it will be a collision between the current cart and an other
         :param cart: the current cart
         :return: True if there was a cart with the current cart position
         """
-
         # get the next position of current cart
         #next_position = self.get_next_position_cart(cart)
         current_position = cart.get_position_yx()
@@ -345,6 +337,9 @@ class MineCartMadnessManager:
         return False
 
     def sort_carts(self):
+        """
+        update the carts order by horizontally then vertically
+        """
         carts_to_sorted = []
         for cart in self.carts:
             carts_to_sorted.append(tuple((cart.get_position_yx()[0], cart.get_position_yx()[1], cart.get_direction(), cart.get_per_intersection_memory())))
@@ -378,7 +373,6 @@ class MineCartMadnessManager:
 
     def run(self):
         # launch the execution of cart on the map only if there was no collision
-        #turn = 2
         while not self.is_last_cart:
             # browse in each carts
             # refresh order
@@ -392,12 +386,11 @@ class MineCartMadnessManager:
                     self.there_was_a_collision()
                     # remove all carts on collision
                     self.remove_carts_on_collision(cart)
-            #self.print_map_with_carts()
+            # get the last position
             if len(self.carts) == 1:
                 self.last_position = self.carts[0].get_position_yx()
                 self.is_last_cart = True
                 break
-            #turn += 1
 
     def print_map_with_carts(self, pos_x=(-1, -1)):
         from copy import deepcopy
@@ -454,8 +447,7 @@ class TestDay13part2(unittest.TestCase):
         lines = input_file()
         res = output_file()
         pred = day_13_part_2(lines)
-        print(pred)
-        #assert(pred == res)
+        assert(pred == res)
 
 
 if __name__ == '__main__':
