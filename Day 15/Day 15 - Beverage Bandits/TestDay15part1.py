@@ -19,26 +19,32 @@ def output_file():
 
 class Position:
     """
-    Position x, y
+    Position y, x
     """
-    def __init__(self, x, y):
+    def __init__(self, y, x):
         """
         The position used on the grid
         :param x: x coordonate
         :param y: y coordonate
         """
-        self.x = x
         self.y = y
+        self.x = x
 
     def get_position(self):
-        return self.x, self.y
+        return self.y, self.x
+
+    def get_y(self):
+        return self.y
+
+    def get_x(self):
+        return self.x
 
 
 class Fighter:
     """
     An Elve has a recipe position and value
     """
-    def __init__(self, classification, position, hit_points=200, hit_power=3):
+    def __init__(self, position, classification, map=[], fighters=[], hit_points=200, hit_power=3):
         """
         An Elf is represented by his position and his
         :param classification: can be an Elve or a Gobelin
@@ -46,10 +52,22 @@ class Fighter:
         :param hit_points: number of life points
         :param hit_power: number of damage with each attack
         """
-        self.classification = classification
         self.position = position
+        self.classification = classification
+        self.map = map
+        self.fighters = fighters
         self.hit_points = hit_points
         self.hit_power = hit_power
+
+    def get_position(self):
+        """
+        Get the position of the cart
+        :return: the position y x of the current cart
+        """
+        return self.position
+
+    def get_classification(self):
+        return self.classification
 
     def is_alive(self):
         """
@@ -79,6 +97,7 @@ class Fighter:
         self.hit_points -= fighter.get_hit_power()
 
     def move(self, fighters, walls):
+        pass
 
     def step(self):
         # TODO nothing
@@ -95,9 +114,9 @@ class BeverageBanditsManager:
     """
     Beverage bandits manager permits us to know what happened each turn
     """
-    def __init__(self, fighters, walls):
+    def __init__(self, fighters, map):
         self.fighters = fighters
-        self.walls = walls
+        self.map = map
 
     def get_fighters(self):
         return self.fighters
@@ -105,63 +124,27 @@ class BeverageBanditsManager:
     def get_elves(self):
         elves = []
         for fighter in self.fighters:
-            elves.append(fighter)
+            if fighter.get_classification() == "E":
+                elves.append(fighter)
         return elves
 
     def get_gobelins(self):
         gobelins = []
         for fighter in self.fighters:
-            gobelins.append(fighter)
+            if fighter.get_classification() == "G":
+                gobelins.append(fighter)
         return gobelins
 
     def get_walls(self):
         return self.walls
 
-    def extract_result(self, sum_):
-        """
-        Extract the result from the sum of each elves values
-        :param sum_: sum of elves value
-        :return: a list or a value
-        """
-        sum_extract = []
-        if sum_/10 >= 1:
-            # case superior by ten
-            sum_extract.append(int(str(sum_)[0]))
-            sum_extract.append(int(str(sum_)[1]))
-            return sum_extract
-        else:
-            # case inferior by ten
-            return [sum_]
-
     def next_elves_position(self):
-        """
-        Move the two elves using the rule that
-        the next position is the current recipe
-        value plus the current position plus one
-        in the list of recipe
-        """
-        first_elve_move = (self.first_elve.get_current_recipe_position() + self.first_elve.get_current_recipe_value() + 1) % len(self.recipes)
-        self.first_elve.set_current_recipe_position(first_elve_move)
-        self.first_elve.set_current_recipe_value(int(self.recipes[first_elve_move]))
-
-        second_elve_move = (self.second_elve.get_current_recipe_position() + self.second_elve.get_current_recipe_value() + 1) % len(self.recipes)
-        self.second_elve.set_current_recipe_position(second_elve_move)
-        self.second_elve.set_current_recipe_value(int(self.recipes[second_elve_move]))
+        pass
 
     def execute(self, debug=False):
         # process on recipes
-        i = 0
-        while len(self.recipes) < self.after_number_recipe + 10:
-            # sum of two elves recipe
-            sum_ = self.sum_recipes()
-            # split the result if > %10
-            #extract_sum = self.extract_result(sum_)
-            self.recipes = self.recipes + str(sum_)
-            # move the elves
-            self.next_elves_position()
-            if debug:
-                self.print_step(i)
-            i += 1
+        pass
+
 
     def print_step(self, i):
         """
@@ -176,7 +159,199 @@ class BeverageBanditsManager:
         Get the ten digits after the number of recipes in input
         :return:ten digits in string format
         """
-        return "".join(self.recipes[self.after_number_recipe:self.after_number_recipe+10])
+        return ""
+
+    def get_enemies(self, fighter):
+        # return the enemies of the current fighter
+        # get the current classification
+        fighter_class = fighter.get_classification()
+        if fighter_class == "G":
+            return self.get_elves()
+        if fighter_class == "E":
+            return self.get_gobelins()
+
+    def is_case_available(self, y, x, current_fighter):
+        if self.map[y][x] == "#":
+            return False
+        # get current fighter position
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        for fighter in self.get_fighters():
+            # get fighter position
+            fighter_position_y = fighter.get_position().get_y()
+            fighter_position_x = fighter.get_position().get_x()
+            if not (
+                    current_fighter_position_y == fighter_position_y and current_fighter_position_x == fighter_position_x):
+                # test fighter and wall existence
+                if fighter_position_y == y and fighter_position_x == x:
+                    return False
+        return True
+
+    def get_range_from_enemies(self, current_fighter, enemies):
+        """
+        Using the map we locate every adjacent available case
+        :param enemies: list of enemies
+        """
+        in_range = []
+        for enemy in enemies:
+            # get enemy position
+            current_enemy_position_y = enemy.get_position().get_y()
+            current_enemy_position_x = enemy.get_position().get_x()
+            # 4 adjacent
+            # test if there was no # or fighter
+            # up
+            if self.is_case_available(current_enemy_position_y - 1, current_enemy_position_x, current_fighter):
+                in_range.append((current_enemy_position_y - 1, current_enemy_position_x))
+            # left
+            if self.is_case_available(current_enemy_position_y, current_enemy_position_x - 1, current_fighter):
+                in_range.append((current_enemy_position_y, current_enemy_position_x - 1))
+            # right
+            if self.is_case_available(current_enemy_position_y, current_enemy_position_x + 1, current_fighter):
+                in_range.append((current_enemy_position_y, current_enemy_position_x + 1))
+            # down
+            if self.is_case_available(current_enemy_position_y + 1, current_enemy_position_x, current_fighter):
+                in_range.append((current_enemy_position_y + 1, current_enemy_position_x))
+        return in_range
+
+    def add_enemies_on_map(self, enemies):
+        for enemy in enemies:
+            self.map[enemy.get_position().get_y()][enemy.get_position().get_x()] = enemy.get_classification()
+
+    # TODO Targets current with list enemies
+    def print_first_fighter_target(self):
+        print("Targets :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        self.map[current_fighter.get_position().get_y()][current_fighter.get_position().get_x()] = current_fighter.get_classification()
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        for enemy in enemies:
+            self.map[enemy.get_position().get_y()][enemy.get_position().get_x()] = enemy.get_classification()
+        self.print_map()
+
+    # TODO In range current with list enemies and walls
+    def print_range_enemies_with_walls(self):
+        print("In range :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        # print range of enemies
+        for ir in in_range:
+            self.map[ir[0]][ir[1]] = "?"
+        # print enemies
+        self.add_enemies_on_map(enemies)
+        self.print_map()
+        pass
+
+    # TODO Reachable current with list enemies reachable
+    def print_reachable_enemies_with_walls(self):
+        print("Reachable :")
+
+    # TODO Nearest for each dot put the number of case to reach enemy
+    def print_nearest_enemies_reachable(self):
+        print("Nearest :")
+
+    # TODO Chosen return the coordonate to attack
+    def print_chosen_enemy_reachable(self):
+        print("Chosen :")
+
+    # TODO Move_to_chosen move to the chosen using priority of x and y
+    def print_move_to_enemy_reachable(self):
+        print("Move :")
+
+    def print_order_fighter_on_map(self):
+        for index, fighter in enumerate(self.fighters):
+            self.map[fighter.get_position().get_y()][fighter.get_position().get_x()] = str(index+1)
+        self.print_map()
+
+    def print_map(self):
+        """
+        print the map
+        """
+        str_map = ""
+        for line in self.map:
+            str_map += "".join(line) + "\n"
+        print(str_map)
+
+class ObjectBuilder:
+    """
+    Builder to instanciate objects from the input
+    """
+    def __init__(self, lines):
+        self.carts = []
+        self.lines = lines
+        self.fighters = self.build_fighters()
+        self.map = self.build_map()
+
+    def print_carts(self):
+        # print the map using the matrix map
+        print(self.carts)
+
+    def find_all_fighter(self, line, y, fighter):
+        x = 0
+        # classification
+        # first iteration
+        while line.find(fighter, x) != -1:
+            x = line.find(fighter, x)
+            if x == -1:
+                break
+            finder = y, x, fighter
+            yield tuple(finder)
+            x += 1
+
+    def build_map(self):
+        # return the matrix of the map
+        map = []
+        for line in self.lines:
+            line_list = []
+            for i in line:
+                line_list.append(i)
+            map.append(line_list)
+        self.map = map
+        # remove fighters from the map
+        self.remove_fighters_from_map(self.fighters)
+        return map
+
+    def build_fighters(self):
+        # return a list of carts as (x, y, direction of cart)
+        fighters = []
+        fighters_object = []
+        y = 0
+        for line in self.lines:
+            elves = self.find_all_fighter(line, y, "E")
+            if elves != 0:
+                fighters += [e for e in self.find_all_fighter(line, y, "E")]
+            gobelins = self.find_all_fighter(line, y, "G")
+            if gobelins != 0:
+                fighters += [g for g in self.find_all_fighter(line, y, "G")]
+            y += 1
+        fighters = sorted(fighters)
+        # browse on list of tuple
+        for fighter in fighters:
+            # create each cart object
+            fighters_object.append(Fighter(Position(fighter[0], fighter[1]), fighter[2]))
+        # remove the carts from the map
+        return fighters_object
+
+    def remove_fighters_from_map(self, fighters_object):
+        for fighter in fighters_object:
+            self.map[fighter.get_position().get_y()][fighter.get_position().get_x()] = "."
+
+    def get_fighters(self):
+        """
+        Give us the fighters on a list
+        :return: fighters[]
+        """
+        return self.fighters
+
+    def get_map(self):
+        """
+        Give us the map on a matrix
+        :return: map[][]
+        """
+        return self.map
 
 
 def data_retrieve(lines):
@@ -195,12 +370,19 @@ def day_15_part_1(lines):
     # data preparation
     object_builder = ObjectBuilder(lines)
     # data modelisation
-    chocolate_charts_manager = ChocolateChartsManager(number_after_recipe)
+    #object_builder.print_order_fighter_on_map()
+    beverate_bandit_manager = BeverageBanditsManager(object_builder.get_fighters(), object_builder.get_map())
+    #beverate_bandit_manager.print_first_fighter_target()
+    beverate_bandit_manager.print_range_enemies_with_walls()
+    beverate_bandit_manager.print_reachable_enemies_with_walls()
+    beverate_bandit_manager.print_nearest_enemies_reachable()
+    beverate_bandit_manager.print_chosen_enemy_reachable()
+    beverate_bandit_manager.print_move_to_enemy_reachable()
     # data analyse
-    chocolate_charts_manager.execute(False)
+    #chocolate_charts_manager.execute(False)
     # data visualize
-    ten_digits_after = chocolate_charts_manager.visualize()
-    return ten_digits_after
+    #ten_digits_after = chocolate_charts_manager.visualize()
+    return str(0)
 
 
 class TestDay15part1(unittest.TestCase):
