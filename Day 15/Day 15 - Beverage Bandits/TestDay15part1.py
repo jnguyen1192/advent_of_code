@@ -257,6 +257,10 @@ class BeverageBanditsManager:
         for re in reachable_enemies:
             self.map[re[0]][re[1]] = "@"
 
+    def add_nearest_enemies_on_map(self, nearest_enemies):
+        for ne in nearest_enemies:
+            self.map[ne[0]][ne[1]] = "!"
+
     # TODO Targets current with list enemies
     def print_first_fighter_target(self):
         print("Targets :")
@@ -287,6 +291,9 @@ class BeverageBanditsManager:
     def add_current_fighter_on_map(self, current_fighter):
         self.map[current_fighter.get_position().get_y()][
             current_fighter.get_position().get_x()] = current_fighter.get_classification()
+
+    def add_chosen_enemy_on_map(self, chosen):
+        self.map[chosen[0]][chosen[1]] = "+"
 
     def get_reachable_area(self, current_fighter):
         # get available adjacent case
@@ -327,11 +334,32 @@ class BeverageBanditsManager:
         enemies = self.get_enemies(current_fighter)
         in_range = self.get_range_from_enemies(current_fighter, enemies)
         reachable = self.get_reachable_enemies(current_fighter, in_range)
-        #self.get_reachable_area(current_fighter)
+        # print
         self.add_current_fighter_on_map(current_fighter)
         self.add_enemies_on_map(enemies)
         self.add_reachable_enemies_on_map(reachable)
         self.print_map()
+
+    def get_distances(self, y, x, reachables):
+        # get current fighter position
+        distances = []
+        for reachable in reachables:
+            t = abs(y - reachable[0]) + abs(x - reachable[1]), reachable[0], reachable[1]
+            distances.append(tuple(t))
+        return distances
+
+    def get_nearest_enemies(self, current_fighter, reachables):
+        # show number to reach the @
+        nearest_enemies = []
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        distances = self.get_distances(current_fighter_position_y, current_fighter_position_x, reachables)
+        distances = sorted(distances)
+        for distance in distances:
+            # same distance of minimum distances
+            if distance[0] == distances[0][0]:
+                nearest_enemies.append((distance[1], distance[2]))
+        return nearest_enemies
 
     # TODO Nearest for each dot put the number of case to reach enemy
     def print_nearest_enemies_reachable(self):
@@ -341,11 +369,32 @@ class BeverageBanditsManager:
         # choose his enemies
         enemies = self.get_enemies(current_fighter)
         in_range = self.get_range_from_enemies(current_fighter, enemies)
-        reachable = self.get_reachable_enemies(current_fighter, in_range)
+        reachables = self.get_reachable_enemies(current_fighter, in_range)
+        nearest = self.get_nearest_enemies(current_fighter, reachables)
+        # print
+        self.add_current_fighter_on_map(current_fighter)
+        self.add_enemies_on_map(enemies)
+        self.add_nearest_enemies_on_map(nearest)
+        self.print_map()
+
+
 
     # TODO Chosen return the coordonate to attack
     def print_chosen_enemy_reachable(self):
         print("Chosen :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        reachables = self.get_reachable_enemies(current_fighter, in_range)
+        nearest = self.get_nearest_enemies(current_fighter, reachables)
+        chosen = nearest[0]
+        # print
+        self.add_current_fighter_on_map(current_fighter)
+        self.add_enemies_on_map(enemies)
+        self.add_chosen_enemy_on_map(chosen)
+        self.print_map()
 
     # TODO Move_to_chosen move to the chosen using priority of x and y
     def print_move_to_enemy_reachable(self):
@@ -464,8 +513,8 @@ def day_15_part_1(lines):
     beverate_bandit_manager = BeverageBanditsManager(object_builder.get_fighters(), object_builder.get_map())
     #beverate_bandit_manager.print_first_fighter_target()
     #beverate_bandit_manager.print_range_enemies_with_walls()
-    beverate_bandit_manager.print_reachable_enemies_with_walls()
-    beverate_bandit_manager.print_nearest_enemies_reachable()
+    #beverate_bandit_manager.print_reachable_enemies_with_walls()
+    #beverate_bandit_manager.print_nearest_enemies_reachable()
     beverate_bandit_manager.print_chosen_enemy_reachable()
     beverate_bandit_manager.print_move_to_enemy_reachable()
     # data analyse
