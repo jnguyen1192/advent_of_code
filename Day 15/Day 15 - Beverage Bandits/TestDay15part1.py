@@ -135,9 +135,6 @@ class BeverageBanditsManager:
                 gobelins.append(fighter)
         return gobelins
 
-    def get_walls(self):
-        return self.walls
-
     def next_elves_position(self):
         pass
 
@@ -170,7 +167,19 @@ class BeverageBanditsManager:
         if fighter_class == "E":
             return self.get_gobelins()
 
-    def is_case_available(self, y, x, current_fighter):
+    def is_case_available(self, y, x):
+        if self.map[y][x] == "#":
+            return False
+        for fighter in self.get_fighters():
+            # get fighter position
+            fighter_position_y = fighter.get_position().get_y()
+            fighter_position_x = fighter.get_position().get_x()
+            # test fighter and wall existence
+            if fighter_position_y == y and fighter_position_x == x:
+                return False
+        return True
+
+    def is_case_available_without_current_fighter(self, y, x, current_fighter):
         if self.map[y][x] == "#":
             return False
         # get current fighter position
@@ -187,6 +196,29 @@ class BeverageBanditsManager:
                     return False
         return True
 
+    def is_case_on_cases(self, cases, y, x):
+        for case in cases:
+            if case[0] == y and case[1] == x:
+                return True
+        return False
+
+    def get_adjacent_available_case(self, cases, y, x):
+        adjacent_available = []
+        # 4 adjacent
+        # test if there was no # or fighter
+        if self.is_case_available(y - 1, x) and not self.is_case_on_cases(cases, y - 1, x):
+            adjacent_available.append((y - 1, x))
+            # left
+        if self.is_case_available(y, x - 1) and not self.is_case_on_cases(cases, y, x - 1):
+            adjacent_available.append((y, x - 1))
+            # right
+        if self.is_case_available(y, x + 1) and not self.is_case_on_cases(cases, y, x + 1):
+            adjacent_available.append((y, x + 1))
+            # down
+        if self.is_case_available(y + 1, x) and not self.is_case_on_cases(cases, y + 1, x):
+            adjacent_available.append((y + 1, x))
+        return adjacent_available
+
     def get_range_from_enemies(self, current_fighter, enemies):
         """
         Using the map we locate every adjacent available case
@@ -200,22 +232,30 @@ class BeverageBanditsManager:
             # 4 adjacent
             # test if there was no # or fighter
             # up
-            if self.is_case_available(current_enemy_position_y - 1, current_enemy_position_x, current_fighter):
+            if self.is_case_available_without_current_fighter(current_enemy_position_y - 1, current_enemy_position_x, current_fighter):
                 in_range.append((current_enemy_position_y - 1, current_enemy_position_x))
             # left
-            if self.is_case_available(current_enemy_position_y, current_enemy_position_x - 1, current_fighter):
+            if self.is_case_available_without_current_fighter(current_enemy_position_y, current_enemy_position_x - 1, current_fighter):
                 in_range.append((current_enemy_position_y, current_enemy_position_x - 1))
             # right
-            if self.is_case_available(current_enemy_position_y, current_enemy_position_x + 1, current_fighter):
+            if self.is_case_available_without_current_fighter(current_enemy_position_y, current_enemy_position_x + 1, current_fighter):
                 in_range.append((current_enemy_position_y, current_enemy_position_x + 1))
             # down
-            if self.is_case_available(current_enemy_position_y + 1, current_enemy_position_x, current_fighter):
+            if self.is_case_available_without_current_fighter(current_enemy_position_y + 1, current_enemy_position_x, current_fighter):
                 in_range.append((current_enemy_position_y + 1, current_enemy_position_x))
         return in_range
 
     def add_enemies_on_map(self, enemies):
         for enemy in enemies:
             self.map[enemy.get_position().get_y()][enemy.get_position().get_x()] = enemy.get_classification()
+
+    def add_range_enemies_on_map(self, in_range):
+        for ir in in_range:
+            self.map[ir[0]][ir[1]] = "?"
+
+    def add_reachable_enemies_on_map(self, reachable_enemies):
+        for re in reachable_enemies:
+            self.map[re[0]][re[1]] = "@"
 
     # TODO Targets current with list enemies
     def print_first_fighter_target(self):
@@ -225,8 +265,8 @@ class BeverageBanditsManager:
         self.map[current_fighter.get_position().get_y()][current_fighter.get_position().get_x()] = current_fighter.get_classification()
         # choose his enemies
         enemies = self.get_enemies(current_fighter)
-        for enemy in enemies:
-            self.map[enemy.get_position().get_y()][enemy.get_position().get_x()] = enemy.get_classification()
+        # print enemies
+        self.add_enemies_on_map(enemies)
         self.print_map()
 
     # TODO In range current with list enemies and walls
@@ -238,20 +278,70 @@ class BeverageBanditsManager:
         enemies = self.get_enemies(current_fighter)
         in_range = self.get_range_from_enemies(current_fighter, enemies)
         # print range of enemies
-        for ir in in_range:
-            self.map[ir[0]][ir[1]] = "?"
+        self.add_range_enemies_on_map(in_range)
         # print enemies
         self.add_enemies_on_map(enemies)
-        self.print_map()
+        #self.print_map()
         pass
+
+    def add_current_fighter_on_map(self, current_fighter):
+        self.map[current_fighter.get_position().get_y()][
+            current_fighter.get_position().get_x()] = current_fighter.get_classification()
+
+    def get_reachable_area(self, current_fighter):
+        # get available adjacent case
+        adjacent_available = []
+        # look case adjacent from the current fighter
+        # get current fighter position
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        adjacent_available = adjacent_available + self.get_adjacent_available_case(adjacent_available, current_fighter_position_y,
+                                                                                   current_fighter_position_x)
+        old_length = len(adjacent_available)
+        while True:
+            for aa in adjacent_available:
+                adjacent_available = adjacent_available + self.get_adjacent_available_case(adjacent_available, aa[0], aa[1])
+            if len(adjacent_available) == old_length:
+                break
+            old_length = len(adjacent_available)
+        #for aa in adjacent_available:
+        #    self.map[aa[0]][aa[1]] = "Y"
+        return adjacent_available
+
+    def get_reachable_enemies(self, current_fighter, in_range):
+        # get reachable area
+        # a reachable area is an area wich our current fighter can move
+        reachable_enemies = []
+        reachable_area = self.get_reachable_area(current_fighter)
+        for ir in in_range:
+            if self.is_case_on_cases(reachable_area, ir[0], ir[1]):
+                reachable_enemies.append(ir)
+        return reachable_enemies
 
     # TODO Reachable current with list enemies reachable
     def print_reachable_enemies_with_walls(self):
         print("Reachable :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        reachable = self.get_reachable_enemies(current_fighter, in_range)
+        #self.get_reachable_area(current_fighter)
+        self.add_current_fighter_on_map(current_fighter)
+        self.add_enemies_on_map(enemies)
+        self.add_reachable_enemies_on_map(reachable)
+        self.print_map()
 
     # TODO Nearest for each dot put the number of case to reach enemy
     def print_nearest_enemies_reachable(self):
         print("Nearest :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        reachable = self.get_reachable_enemies(current_fighter, in_range)
 
     # TODO Chosen return the coordonate to attack
     def print_chosen_enemy_reachable(self):
@@ -373,7 +463,7 @@ def day_15_part_1(lines):
     #object_builder.print_order_fighter_on_map()
     beverate_bandit_manager = BeverageBanditsManager(object_builder.get_fighters(), object_builder.get_map())
     #beverate_bandit_manager.print_first_fighter_target()
-    beverate_bandit_manager.print_range_enemies_with_walls()
+    #beverate_bandit_manager.print_range_enemies_with_walls()
     beverate_bandit_manager.print_reachable_enemies_with_walls()
     beverate_bandit_manager.print_nearest_enemies_reachable()
     beverate_bandit_manager.print_chosen_enemy_reachable()
