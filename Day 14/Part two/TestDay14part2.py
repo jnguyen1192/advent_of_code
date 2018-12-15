@@ -117,10 +117,10 @@ class ChocolateChartsManager:
 
     def visualize(self):
         """
-        Get the ten digits after the number of recipes in input
+        Get the index of first 5 digits of the ten digits score found
         :return:ten digits in string format
         """
-        return "".join(self.recipes[self.after_number_recipe-10:self.after_number_recipe])
+        return self.recipes.find(self.recipes[self.after_number_recipe:self.after_number_recipe+5]) + 1
 
 
 def data_retrieve(lines):
@@ -143,8 +143,8 @@ def day_14_part_2(lines):
     # data analyse
     chocolate_charts_manager.execute(False)
     # data visualize
-    ten_digits_after = chocolate_charts_manager.visualize()
-    return ten_digits_after
+    number_of_recipe_on_the_left_score_found = chocolate_charts_manager.visualize()
+    return number_of_recipe_on_the_left_score_found
 
 
 class TestDay14part2(unittest.TestCase):
