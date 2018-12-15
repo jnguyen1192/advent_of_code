@@ -69,7 +69,7 @@ class ChocolateChartsManager:
         self.after_number_recipe = after_number_recipe
         self.first_elve = Elve(0, first_recipe)
         self.second_elve = Elve(1, second_recipe)
-        self.recipes = [first_recipe, second_recipe]
+        self.recipes = str(first_recipe) + str(second_recipe)
 
     def sum_recipes(self):
         """
@@ -103,38 +103,41 @@ class ChocolateChartsManager:
         """
         first_elve_move = (self.first_elve.get_current_recipe_position() + self.first_elve.get_current_recipe_value() + 1) % len(self.recipes)
         self.first_elve.set_current_recipe_position(first_elve_move)
-        self.first_elve.set_current_recipe_value(self.recipes[first_elve_move])
+        self.first_elve.set_current_recipe_value(int(self.recipes[first_elve_move]))
 
         second_elve_move = (self.second_elve.get_current_recipe_position() + self.second_elve.get_current_recipe_value() + 1) % len(self.recipes)
         self.second_elve.set_current_recipe_position(second_elve_move)
-        self.second_elve.set_current_recipe_value(self.recipes[second_elve_move])
+        self.second_elve.set_current_recipe_value(int(self.recipes[second_elve_move]))
 
-    def execute(self):
+    def execute(self, debug=False):
         # process on recipes
         i = 0
         while len(self.recipes) < self.after_number_recipe + 10:
             # sum of two elves recipe
             sum_ = self.sum_recipes()
             # split the result if > %10
-            extract_sum = self.extract_result(sum_)
-            self.recipes = self.recipes + extract_sum
+            #extract_sum = self.extract_result(sum_)
+            self.recipes = self.recipes + str(sum_)
             # move the elves
             self.next_elves_position()
-            self.print_step()
+            if debug:
+                self.print_step(i)
             i += 1
 
-    def print_step(self):
+    def print_step(self, i):
         """
         print each step
         """
-        print(self.recipes)
+        import sys
+        print(str(i))
+        #print(self.recipes)
 
     def visualize(self):
         """
         Get the ten digits after the number of recipes in input
         :return:ten digits in string format
         """
-        return "".join([str(recipe) for recipe in self.recipes[self.after_number_recipe:self.after_number_recipe+10]])
+        return "".join(self.recipes[self.after_number_recipe:self.after_number_recipe+10])
 
 
 def data_retrieve(lines):
@@ -151,11 +154,11 @@ def day_14_part_1(lines):
     # data retrieve
     data = data_retrieve(lines)
     # data preparation
-    grid_serial_number = data_preparation(data)
+    number_after_recipe = data_preparation(data)
     # data modelisation
-    chocolate_charts_manager = ChocolateChartsManager(2018)
+    chocolate_charts_manager = ChocolateChartsManager(number_after_recipe)
     # data analyse
-    chocolate_charts_manager.execute()
+    chocolate_charts_manager.execute(False)
     # data visualize
     ten_digits_after = chocolate_charts_manager.visualize()
     return ten_digits_after
@@ -163,12 +166,21 @@ def day_14_part_1(lines):
 
 class TestDay14part1(unittest.TestCase):
 
-    def test_day_11_part_1(self):
+    def test_day_14_part_1(self):
         lines = input_file()
         res = output_file()
         pred = day_14_part_1(lines)
         print(pred)
         #assert(pred == res)
+
+    def test_chain_code(self):
+        from itertools import chain
+        string = "hello world"
+        for c in chain(string):
+            print(c)
+        print((chain(string)))
+        print(chain(string)[0])
+
 
 
 if __name__ == '__main__':
