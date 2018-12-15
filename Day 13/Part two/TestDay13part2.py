@@ -268,7 +268,9 @@ class MineCartMadnessManager:
         self.carts = carts
         self.map = map
         self.collision_position = (0, 0)
+        self.last_position = (0, 0)
         self.collision = False
+        self.is_last_cart = False
 
     def is_collision(self):
         """
@@ -282,6 +284,12 @@ class MineCartMadnessManager:
         The collision between two carts happened
         """
         self.collision = True
+
+    def the_last_cart_position(self, cart):
+        """
+        The collision between two carts happened
+        """
+        self.last_position = cart.get_position_yx
 
     def get_next_position_cart(self, cart):
         """
@@ -347,28 +355,50 @@ class MineCartMadnessManager:
             # create each cart object
             self.carts.append(Cart(cart[0], cart[1], cart[2], self.map, cart[3]))
 
+    def remove_carts_on_collision(self, cart):
+        """
+        Remove the two carts on collision from the list of carts
+        :param cart: the cart to test for the collision
+        """
+        #next_position = self.get_next_position_cart(cart)
+        current_position = cart.get_position_yx()
+        two_cars = 0
+        # browse in carts
+        for cart in self.carts:
+            # if there was a cart here return True
+            if current_position == cart.get_position_yx():
+                two_cars += 1
+        # use the position to the collision to remove carts
+        if two_cars == 2:
+            carts_alive = []
+            for cart in self.carts:
+                if cart.get_position_yx() != current_position:
+                    carts_alive.append(cart)
+            self.carts = carts_alive
+
     def run(self):
         # launch the execution of cart on the map only if there was no collision
-        turn = 2
-        #pos_x = (-1, -1)
-        while not self.is_collision():
+        #turn = 2
+        while not self.is_last_cart:
             # browse in each carts
             # refresh order
-            #print(turn)
             # sort carts
             self.sort_carts()
             for cart in self.carts:
+                cart.move()
                 # determine if it will be a collision between the current cart and another
                 if self.are_they_on_collision(cart):
                     # set the final parameter and leave the loop
                     self.there_was_a_collision()
-                    #pos_x = cart.get_position_yx()
-                    break
-                #self.print_map_with_carts(cart.get_position_yx())
-                cart.move()
-            #self.print_map_with_carts(cart.get_position_yx())
-            #self.print_map_with_carts(pos_x)
-            turn += 1
+                    # remove all carts on collision
+                    self.remove_carts_on_collision(cart)
+                    if len(self.carts) == 1:
+                        self.carts[0].move()
+                        self.last_position = self.carts[0].get_position_yx()
+                        self.is_last_cart = True
+                        break
+            #self.print_map_with_carts()
+            #turn += 1
 
     def print_map_with_carts(self, pos_x=(-1, -1)):
         from copy import deepcopy
@@ -386,7 +416,7 @@ class MineCartMadnessManager:
         print(string_map)
 
     def visualize(self):
-        return self.collision_position[1], self.collision_position[0]
+        return self.last_position[1], self.last_position[0]
 
     def print_map(self):
         # print the map using the matrix map
@@ -405,7 +435,7 @@ def data_preparation(lines):
     return lines
 
 
-def day_13_part_1(lines):
+def day_13_part_2(lines):
     # data retrieve
     lines = data_retrieve(lines)
     # data preparation
@@ -415,17 +445,18 @@ def day_13_part_1(lines):
     # data analyse
     mine_cart_madness.run()
     # data visualize
-    collision_position = mine_cart_madness.visualize()
-    return str(collision_position[0]) + "," + str(collision_position[1])
+    last_postion = mine_cart_madness.visualize()
+    return str(last_postion[0]) + "," + str(last_postion[1])
 
 
-class TestDay13part1(unittest.TestCase):
+class TestDay13part2(unittest.TestCase):
 
-    def test_day_13_part_1(self):
+    def test_day_13_part_2(self):
         lines = input_file()
         res = output_file()
-        pred = day_13_part_1(lines)
-        assert(pred == res)
+        pred = day_13_part_2(lines)
+        print(pred)
+        #assert(pred == res)
 
 
 if __name__ == '__main__':
