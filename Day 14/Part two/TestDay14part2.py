@@ -106,8 +106,9 @@ class ChocolateChartsManager:
             self.next_elves_position()
             #print(i)
             if debug:
-                self.print_step(i)
-            i += 1
+                if i % 1000000:
+                    print(i, " ", len(self.recipes))
+                    #self.print_step(i)
 
     def print_step(self, i):
         """
@@ -141,7 +142,7 @@ def day_14_part_2(lines):
     # data modelisation
     chocolate_charts_manager = ChocolateChartsManager(number_after_recipe)
     # data analyse
-    chocolate_charts_manager.execute(False)
+    chocolate_charts_manager.execute(True)
     # data visualize
     number_of_recipe_on_the_left_score_found = chocolate_charts_manager.visualize()
     return number_of_recipe_on_the_left_score_found
