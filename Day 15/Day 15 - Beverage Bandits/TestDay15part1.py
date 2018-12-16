@@ -219,13 +219,27 @@ class BeverageBanditsManager:
                 # chose the nearest case sorted by y and x coordonate
                 chosen = nearest[0]
                 # get the adjacent case distance to the chosen'+'
-                # TODO Improve shortest way
+                # TODO Improve shortest way using personnalize logic
+                # for each case available adjacent we note the number of case we need to reach our goal
+                # we get the sum of each case and choose the minimum
+
                 adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
                 # move the current fighter
                 current_fighter.move_to(*adjacent_case_to_move)
-        else:
-            # TODO attack
-            pass
+
+    def attack_fighter(self, fighter):
+        """
+        Attack if an enemy is around the current fighter,
+        choose the lowest hit points and by coordonate.
+        :param fighter:the fighter the will attack
+        """
+        # get the enemies around
+
+        # case no enenmy => end function
+
+        # order them by life, y and x
+
+        # attack the first on the previous list
     """
     Getters
     """
@@ -270,6 +284,14 @@ class BeverageBanditsManager:
             return self.get_elves()
         if fighter_class == "E":
             return self.get_gobelins()
+
+    def get_adjacent_enemies(self, fighter):
+        """
+        Get the enemies around the current fighter
+        :param fighter:
+        :return:
+        """
+        pass
 
     def get_adjacent_available_case(self, y, x, cases=[]):
         """
