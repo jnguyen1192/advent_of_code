@@ -120,6 +120,14 @@ class Fighter:
         """
         self.hit_points -= fighter.get_hit_power()
 
+    def move_to(self, y, x):
+        """
+        Move to a specific case
+        :param y: y coordonate
+        :param x: x coordonate
+        """
+        self.position = Position(y, x)
+
     def move(self, fighters, walls):
         pass
 
@@ -147,49 +155,33 @@ class BeverageBanditsManager:
         self.fighters = fighters
         self.map = map
 
-    def get_fighters(self):
-        """
-        Get the list of fighters
-        :return: the list of fighter objects
-        """
-        return self.fighters
-
-    def get_elves(self):
-        """
-        Get the list of elves
-        :return: the list of fighter objects with classification 'E'
-        """
-        elves = []
-        for fighter in self.fighters:
-            if fighter.get_classification() == "E":
-                elves.append(fighter)
-        return elves
-
-    def get_gobelins(self):
-        """
-        Get the list of elves
-        :return: the list of fighter objects with classification 'G'
-        """
-        gobelins = []
-        for fighter in self.fighters:
-            if fighter.get_classification() == "G":
-                gobelins.append(fighter)
-        return gobelins
-
     def next_elves_position(self):
         pass
 
-    def execute(self, debug=False):
-        # process on recipes
-        pass
+    def step(self):
+        """
+        This function illustrate what happened in each step
+        """
+        # move each fighters by one step
+        for fighter in self.fighters:
+            self.move_fighter(fighter)
 
-    def print_step(self, i):
-        """
-        print each step
-        """
-        import sys
-        print(str(i))
-        #print(self.recipes)
+    def execute(self, debug=False):
+        # launch the battlefield
+        i = 0
+        if debug:
+            print("Initially:")
+            self.print_map()
+        while i < 4:
+            # compute a step
+            self.step()
+            if debug:
+                if i > 1:
+                    print("After ", i, " rounds:")
+                else:
+                    print("After ", i, " round:")
+                self.print_map()
+            i += 1
 
     def visualize(self):
         """
@@ -197,19 +189,6 @@ class BeverageBanditsManager:
         :return:ten digits in string format
         """
         return ""
-
-    def get_enemies(self, fighter):
-        """
-        Get the list of enemies of the current fighter
-        :param fighter: the current fighter
-        :return: list of enemies of the current fighter
-        """
-        # get the current classification
-        fighter_class = fighter.get_classification()
-        if fighter_class == "G":
-            return self.get_elves()
-        if fighter_class == "E":
-            return self.get_gobelins()
 
     def is_case_available(self, y, x):
         """
@@ -268,7 +247,80 @@ class BeverageBanditsManager:
                 return True
         return False
 
-    def get_adjacent_available_case(self, cases, y, x):
+    def move_fighter(self, fighter):
+        """
+        Move the fighter using different rules on the map,
+        In range, nearest, chosen, distance and step
+        :param fighter:the fighter the will move
+        """
+        current_fighter = fighter
+        # get the current fighter coordonate
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        # get the available case beside enemies
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        # case we are already beside an enemy
+        if not self.is_case_on_cases(in_range, current_fighter_position_y, current_fighter_position_x):
+            # get the reachable enemies that are not blocking by fighter or wall
+            reachables = self.get_reachable_enemies(current_fighter, in_range)
+            # case we can't move
+            if len(reachables) != 0:
+                # get the nearest available case beside enemies
+                nearest = self.get_nearest_enemies(current_fighter, reachables)
+                # chose the nearest case sorted by y and x coordonate
+                chosen = nearest[0]
+                # get the adjacent case distance to the chosen'+'
+                # TODO Improve shortest way
+                adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
+                # move the current fighter
+                current_fighter.move_to(*adjacent_case_to_move)
+
+    def get_fighters(self):
+        """
+        Get the list of fighters
+        :return: the list of fighter objects
+        """
+        return self.fighters
+
+    def get_elves(self):
+        """
+        Get the list of elves
+        :return: the list of fighter objects with classification 'E'
+        """
+        elves = []
+        for fighter in self.fighters:
+            if fighter.get_classification() == "E":
+                elves.append(fighter)
+        return elves
+
+    def get_gobelins(self):
+        """
+        Get the list of elves
+        :return: the list of fighter objects with classification 'G'
+        """
+        gobelins = []
+        for fighter in self.fighters:
+            if fighter.get_classification() == "G":
+                gobelins.append(fighter)
+        return gobelins
+
+    def get_enemies(self, fighter):
+        """
+        Get the list of enemies of the current fighter
+        :param fighter: the current fighter
+        :return: list of enemies of the current fighter
+        """
+        # get the current classification
+        fighter_class = fighter.get_classification()
+        if fighter_class == "G":
+            return self.get_elves()
+        if fighter_class == "E":
+            return self.get_gobelins()
+
+    def get_adjacent_available_case(self, y, x, cases=[]):
         """
         Get the available adjacent case of a specific case
         :param cases: the list of cases to test
@@ -319,6 +371,117 @@ class BeverageBanditsManager:
                 in_range.append((current_enemy_position_y + 1, current_enemy_position_x))
         return in_range
 
+    def get_reachable_area(self, current_fighter):
+        """
+        Get the available area move from the current fighter
+        :param current_fighter: the current fighter
+        :return: the list of coordonate of the available area move
+        """
+        # get available adjacent case
+        adjacent_available = []
+        # look case adjacent from the current fighter
+        # get current fighter position
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        # get adjacent case of the current fighter
+        adjacent_available = adjacent_available + self.get_adjacent_available_case(current_fighter_position_y,
+                                                                                   current_fighter_position_x,
+                                                                                   adjacent_available)
+        # get all case available for moving of the current fighter
+        old_length = len(adjacent_available)
+        while True:
+            for aa in adjacent_available:
+                adjacent_available = adjacent_available + self.get_adjacent_available_case(aa[0], aa[1], adjacent_available)
+            if len(adjacent_available) == old_length:
+                break
+            old_length = len(adjacent_available)
+        return adjacent_available
+
+    def get_reachable_enemies(self, current_fighter, in_range):
+        """
+        Get the enemy that are reachable and not blocking by a fighter or a wall
+        :param current_fighter: the current fighter
+        :param in_range: list of coordonate of available case beside enemies
+        :return: list of case beside enemies reachable
+        """
+        # get reachable area
+        reachable_enemies = []
+        # a reachable area is an area wich our current fighter can move
+        reachable_area = self.get_reachable_area(current_fighter)
+        # add the available case on reachable list
+        for ir in in_range:
+            if self.is_case_on_cases(reachable_area, ir[0], ir[1]):
+                reachable_enemies.append(ir)
+        return reachable_enemies
+
+    def get_distances(self, y, x, reachables):
+        """
+        Get the distances of the list of reachable cases
+        :param y: y coordonate
+        :param x: x coordonate
+        :param reachables: list of reachable cases
+        :return: distances of reachable with their corresponding coordonate
+        """
+        # get current fighter position
+        distances = []
+        for reachable in reachables:
+            t = abs(y - reachable[0]) + abs(x - reachable[1]), reachable[0], reachable[1]
+            distances.append(tuple(t))
+        # order the distance by distance
+        distances = sorted(distances)
+        return distances
+
+    def get_nearest_enemies(self, current_fighter, reachables):
+        """
+        Get the list of nearest case using list of reachable cases
+        :param current_fighter: the current fighter
+        :param reachables: list of reachable cases
+        :return: list of nearest case
+        """
+        nearest_enemies = []
+        # get the current fighter coordonate
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        distances = self.get_distances(current_fighter_position_y, current_fighter_position_x, reachables)
+        # list of same distance of minimum distances
+        for distance in distances:
+            if distance[0] == distances[0][0]:
+                nearest_enemies.append((distance[1], distance[2]))
+        if len(nearest_enemies) == 0:
+            return [(current_fighter_position_y, current_fighter_position_x)]
+        return nearest_enemies
+
+    def get_adjacent_case_to_move(self, current_fighter, chosen):
+        """
+        Get the best adjacent case to move
+        :param current_fighter: the current fighter
+        :param chosen: the chosen case beside enemy
+        :return: the case with coordonate y and x
+        """
+        # get the current fighter coordonate
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        # get the adjacent case of the current fighter
+        adjacent_case_current_fighter = self.get_adjacent_available_case(current_fighter_position_y, current_fighter_position_x)
+        # get the distances sorted by coordonate
+        distances = self.get_distances(chosen[0], chosen[1], adjacent_case_current_fighter)
+        return distances[0][1], distances[0][2]
+
+    def add_current_fighter_on_map(self, current_fighter):
+        """
+        Add the current fighter on the map as 'E' for elve or 'G' for gobelin
+        :param current_fighter: the current fighter
+        """
+        self.map[current_fighter.get_position().get_y()][
+            current_fighter.get_position().get_x()] = current_fighter.get_classification()
+
+    def add_chosen_enemy_on_map(self, chosen):
+        """
+        Add the chosen enemy on the map as '+'
+        :param current_fighter: the current fighter
+        """
+        self.map[chosen[0]][chosen[1]] = "+"
+
     def add_enemies_on_map(self, enemies):
         """
         Add the enemies on map as 'G' for gobelins or 'E' for elves
@@ -326,6 +489,14 @@ class BeverageBanditsManager:
         """
         for enemy in enemies:
             self.map[enemy.get_position().get_y()][enemy.get_position().get_x()] = enemy.get_classification()
+
+    def add_fighters_on_map(self, map):
+        """
+        Add the fighters on the map as 'G' for gobelins or 'E' for elves
+        :param map: the map where we add the fighters
+        """
+        for fighter in self.fighters:
+            map[fighter.get_position().get_y()][fighter.get_position().get_x()] = fighter.get_classification()
 
     def add_range_enemies_on_map(self, in_range):
         """
@@ -383,63 +554,6 @@ class BeverageBanditsManager:
         self.add_enemies_on_map(enemies)
         self.print_map()
 
-    def add_current_fighter_on_map(self, current_fighter):
-        """
-        Add the current fighter on the map as 'E' for elve or 'G' for gobelin
-        :param current_fighter: the current fighter
-        """
-        self.map[current_fighter.get_position().get_y()][
-            current_fighter.get_position().get_x()] = current_fighter.get_classification()
-
-    def add_chosen_enemy_on_map(self, chosen):
-        """
-        Add the chosen enemy on the map as '+'
-        :param current_fighter: the current fighter
-        """
-        self.map[chosen[0]][chosen[1]] = "+"
-
-    def get_reachable_area(self, current_fighter):
-        """
-        Get the available area move from the current fighter
-        :param current_fighter: the current fighter
-        :return: the list of coordonate of the available area move
-        """
-        # get available adjacent case
-        adjacent_available = []
-        # look case adjacent from the current fighter
-        # get current fighter position
-        current_fighter_position_y = current_fighter.get_position().get_y()
-        current_fighter_position_x = current_fighter.get_position().get_x()
-        # get adjacent case of the current fighter
-        adjacent_available = adjacent_available + self.get_adjacent_available_case(adjacent_available, current_fighter_position_y,
-                                                                                   current_fighter_position_x)
-        # get all case available for moving of the current fighter
-        old_length = len(adjacent_available)
-        while True:
-            for aa in adjacent_available:
-                adjacent_available = adjacent_available + self.get_adjacent_available_case(adjacent_available, aa[0], aa[1])
-            if len(adjacent_available) == old_length:
-                break
-            old_length = len(adjacent_available)
-        return adjacent_available
-
-    def get_reachable_enemies(self, current_fighter, in_range):
-        """
-        Get the enemy that are reachable and not blocking by a fighter or a wall
-        :param current_fighter: the current fighter
-        :param in_range: list of coordonate of available case beside enemies
-        :return: list of case beside enemies reachable
-        """
-        # get reachable area
-        reachable_enemies = []
-        # a reachable area is an area wich our current fighter can move
-        reachable_area = self.get_reachable_area(current_fighter)
-        # add the available case on reachable list
-        for ir in in_range:
-            if self.is_case_on_cases(reachable_area, ir[0], ir[1]):
-                reachable_enemies.append(ir)
-        return reachable_enemies
-
     # Reachable current with list enemies reachable
     def print_reachable_enemies_with_walls(self):
         """
@@ -459,41 +573,6 @@ class BeverageBanditsManager:
         self.add_enemies_on_map(enemies)
         self.add_reachable_enemies_on_map(reachable)
         self.print_map()
-
-    def get_distances(self, y, x, reachables):
-        """
-        Get the distances of the list of reachable cases
-        :param y: y coordonate
-        :param x: x coordonate
-        :param reachables: list of reachable cases
-        :return: distances of reachable with their corresponding coordonate
-        """
-        # get current fighter position
-        distances = []
-        for reachable in reachables:
-            t = abs(y - reachable[0]) + abs(x - reachable[1]), reachable[0], reachable[1]
-            distances.append(tuple(t))
-        return distances
-
-    def get_nearest_enemies(self, current_fighter, reachables):
-        """
-        Get the list of nearest case using list of reachable cases
-        :param current_fighter: the current fighter
-        :param reachables: list of reachable cases
-        :return: list of nearest case
-        """
-        nearest_enemies = []
-        # get the current fighter coordonate
-        current_fighter_position_y = current_fighter.get_position().get_y()
-        current_fighter_position_x = current_fighter.get_position().get_x()
-        distances = self.get_distances(current_fighter_position_y, current_fighter_position_x, reachables)
-        # order the distance by distance
-        distances = sorted(distances)
-        # list of same distance of minimum distances
-        for distance in distances:
-            if distance[0] == distances[0][0]:
-                nearest_enemies.append((distance[1], distance[2]))
-        return nearest_enemies
 
     # Nearest for each dot put the number of case to reach enemy
     def print_nearest_enemies_reachable(self):
@@ -542,8 +621,35 @@ class BeverageBanditsManager:
         self.print_map()
 
     # Move_to_chosen move to the chosen using priority of x and y
-    def print_move_to_enemy_reachable(self):
+    def print_step(self):
+        """
+        Print the step example
+        """
         print("Move :")
+        # choose the first fighter
+        current_fighter = self.fighters[0]
+        # choose his enemies
+        enemies = self.get_enemies(current_fighter)
+        # get the available case beside enemies
+        in_range = self.get_range_from_enemies(current_fighter, enemies)
+        # get the reachable enemies that are not blocking by fighter or wall
+        reachables = self.get_reachable_enemies(current_fighter, in_range)
+        # case we can't move
+        if len(reachables) != 0:
+            # get the nearest available case beside enemies
+            nearest = self.get_nearest_enemies(current_fighter, reachables)
+            # chose the nearest case sorted by y and x coordonate
+            chosen = nearest[0]
+            # get the adjacent case distance to the chosen'+'
+            # TODO Improve shortest way
+            adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
+            # move the current fighter
+            current_fighter.move_to(*adjacent_case_to_move)
+        # print
+        self.add_current_fighter_on_map(current_fighter)
+        self.add_enemies_on_map(enemies)
+        #self.add_chosen_enemy_on_map(chosen)
+        self.print_map()
 
     def print_order_fighter_on_map(self):
         """
@@ -557,8 +663,11 @@ class BeverageBanditsManager:
         """
         print the map
         """
+        from copy import deepcopy
+        map_with_fighter = deepcopy(self.map)
+        self.add_fighters_on_map(map_with_fighter)
         str_map = ""
-        for line in self.map:
+        for line in map_with_fighter:
             str_map += "".join(line) + "\n"
         print(str_map)
 
@@ -682,10 +791,10 @@ def day_15_part_1(lines):
     #beverate_bandit_manager.print_range_enemies_with_walls()
     #beverate_bandit_manager.print_reachable_enemies_with_walls()
     #beverate_bandit_manager.print_nearest_enemies_reachable()
-    beverate_bandit_manager.print_chosen_enemy_reachable()
-    beverate_bandit_manager.print_move_to_enemy_reachable()
+    #beverate_bandit_manager.print_chosen_enemy_reachable()
+    #beverate_bandit_manager.print_step()
     # data analyse
-    #chocolate_charts_manager.execute(False)
+    beverate_bandit_manager.execute(True)
     # data visualize
     #ten_digits_after = chocolate_charts_manager.visualize()
     return str(0)
