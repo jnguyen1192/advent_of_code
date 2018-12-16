@@ -175,7 +175,7 @@ class BeverageBanditsManager:
         if debug:
             print("Initially:")
             self.print_map()
-        while i < 4:
+        while i < 1:
             # compute a step
             self.step()
             if debug:
@@ -218,7 +218,7 @@ class BeverageBanditsManager:
                 nearest = self.get_nearest_enemies(current_fighter, reachables)
                 # chose the nearest case sorted by y and x coordonate
                 chosen = nearest[0]
-                # get the adjacent case distance to the chosen'+'
+                # get the adjacent case distance to the chosen '+'
                 # TODO Improve shortest way using personnalize logic
                 # for each case available adjacent we note the number of case we need to reach our goal
                 # we get the sum of each case and choose the minimum
@@ -344,7 +344,7 @@ class BeverageBanditsManager:
                 in_range.append((current_enemy_position_y + 1, current_enemy_position_x))
         return in_range
 
-    def get_reachable_area(self, current_fighter):
+    def get_reachable_area(self, y ,x):
         """
         Get the available area move from the current fighter
         :param current_fighter: the current fighter
@@ -353,13 +353,8 @@ class BeverageBanditsManager:
         # get available adjacent case
         adjacent_available = []
         # look case adjacent from the current fighter
-        # get current fighter position
-        current_fighter_position_y = current_fighter.get_position().get_y()
-        current_fighter_position_x = current_fighter.get_position().get_x()
         # get adjacent case of the current fighter
-        adjacent_available = adjacent_available + self.get_adjacent_available_case(current_fighter_position_y,
-                                                                                   current_fighter_position_x,
-                                                                                   adjacent_available)
+        adjacent_available = adjacent_available + self.get_adjacent_available_case(y, x, adjacent_available)
         # get all case available for moving of the current fighter
         old_length = len(adjacent_available)
         while True:
@@ -377,10 +372,13 @@ class BeverageBanditsManager:
         :param in_range: list of coordonate of available case beside enemies
         :return: list of case beside enemies reachable
         """
+        # get current fighter position
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
         # get reachable area
         reachable_enemies = []
         # a reachable area is an area wich our current fighter can move
-        reachable_area = self.get_reachable_area(current_fighter)
+        reachable_area = self.get_reachable_area(current_fighter_position_y, current_fighter_position_x)
         # add the available case on reachable list
         for ir in in_range:
             if self.is_case_on_cases(reachable_area, ir[0], ir[1]):
@@ -389,7 +387,7 @@ class BeverageBanditsManager:
 
     def get_distances(self, y, x, reachables):
         """
-        Get the distances of the list of reachable cases
+        Get the distances of the list of reachable cases sorted by the shortest path by fly bird
         :param y: y coordonate
         :param x: x coordonate
         :param reachables: list of reachable cases
@@ -436,8 +434,33 @@ class BeverageBanditsManager:
         current_fighter_position_x = current_fighter.get_position().get_x()
         # get the adjacent case of the current fighter
         adjacent_case_current_fighter = self.get_adjacent_available_case(current_fighter_position_y, current_fighter_position_x)
+
+
+        # nous allons savoir où le guerrier doit se diriger
+        # a chaque fois qu on test en prend en compte les cases visitees
+        # un test se deroule de cette maniere
+        #    en fonction de la position initiale et la position finale
+        #          nous savons que nous devons aller dans cette direction
+        #          s il n y a pas d'acces possible utiliser la deuxième direction
+        #          de meme si c'est pas possible
+        #          sinon c est bloque et on recommence la visite du debut en choisissant une case qui n a pas ete visite*
+        #          lorsque nous arrivons a destination c est bon
+
+
+
         # get the distances sorted by coordonate
         distances = self.get_distances(chosen[0], chosen[1], adjacent_case_current_fighter)
+
+        # check if with distances[0] there was available area
+        print(distances)
+        while True:
+            # a reachable area is an area wich our current fighter can move
+            reachable_area = self.get_reachable_area(distances[0][1], distances[0][2])
+            # if chosen case is available on area we can move
+            if self.is_case_on_cases(reachable_area, chosen[0], chosen[1]):
+                break
+            # we suppress the invalid case
+            distances.pop(0)
         return distances[0][1], distances[0][2]
     """
     Add objects on map
@@ -488,6 +511,14 @@ class BeverageBanditsManager:
         """
         for re in reachable_enemies:
             self.map[re[0]][re[1]] = "@"
+
+    def add_distances_enemies_on_map(self, distances_enemies):
+        """
+        Add the list of reachable case on map as '@'
+        :param reachable_enemies: list of coordonate of reachable case
+        """
+        for de in distances_enemies:
+            self.map[de[0]][de[1]] = de[2]
 
     def add_nearest_enemies_on_map(self, nearest_enemies):
         """
@@ -662,30 +693,36 @@ class BeverageBanditsManager:
         Print the step example
         """
         print("Move :")
+        self.print_map()
+        chosen = (0, 0)
         # choose the first fighter
         current_fighter = self.fighters[0]
+        # get the current fighter coordonate
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
         # choose his enemies
         enemies = self.get_enemies(current_fighter)
         # get the available case beside enemies
         in_range = self.get_range_from_enemies(current_fighter, enemies)
-        # get the reachable enemies that are not blocking by fighter or wall
-        reachables = self.get_reachable_enemies(current_fighter, in_range)
-        # case we can't move
-        if len(reachables) != 0:
-            # get the nearest available case beside enemies
-            nearest = self.get_nearest_enemies(current_fighter, reachables)
-            # chose the nearest case sorted by y and x coordonate
-            chosen = nearest[0]
-            # get the adjacent case distance to the chosen'+'
-            # TODO Improve shortest way
-            adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
-            # move the current fighter
-            current_fighter.move_to(*adjacent_case_to_move)
-        # print
-        self.add_current_fighter_on_map(current_fighter)
-        self.add_enemies_on_map(enemies)
-        #self.add_chosen_enemy_on_map(chosen)
-        self.print_map()
+        if not self.is_case_on_cases(in_range, current_fighter_position_y, current_fighter_position_x):
+            # get the reachable enemies that are not blocking by fighter or wall
+            reachables = self.get_reachable_enemies(current_fighter, in_range)
+            # case we can't move
+            if len(reachables) != 0:
+                # get the nearest available case beside enemies
+                nearest = self.get_nearest_enemies(current_fighter, reachables)
+                # chose the nearest case sorted by y and x coordonate
+                chosen = nearest[0]
+                # get the adjacent case distance to the chosen'+'
+                # TODO Improve shortest way
+                adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
+                # move the current fighter
+                current_fighter.move_to(*adjacent_case_to_move)
+            # print
+            self.add_current_fighter_on_map(current_fighter)
+            self.add_enemies_on_map(enemies)
+            self.add_chosen_enemy_on_map(chosen)
+            self.print_map()
 
     def print_order_fighter_on_map(self):
         """
@@ -843,7 +880,6 @@ class TestDay15part1(unittest.TestCase):
         res = output_file()
         pred = day_15_part_1(lines)
         #assert(pred == res)
-
 
 
 if __name__ == '__main__':

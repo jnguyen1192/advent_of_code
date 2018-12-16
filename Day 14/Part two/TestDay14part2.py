@@ -106,7 +106,7 @@ class ChocolateChartsManager:
             self.next_elves_position()
             #print(i)
             if debug:
-                if i % 1000000:
+                if i > 999999 and i % 1000000 == 0:
                     print(i, " ", len(self.recipes))
                     #self.print_step(i)
 
