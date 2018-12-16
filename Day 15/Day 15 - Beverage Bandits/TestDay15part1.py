@@ -154,7 +154,9 @@ class BeverageBanditsManager:
         """
         self.fighters = fighters
         self.map = map
-
+    """
+    Action tools
+    """
     def next_elves_position(self):
         pass
 
@@ -165,6 +167,7 @@ class BeverageBanditsManager:
         # move each fighters by one step
         for fighter in self.fighters:
             self.move_fighter(fighter)
+            self.attack_fighter(fighter)
 
     def execute(self, debug=False):
         # launch the battlefield
@@ -189,63 +192,6 @@ class BeverageBanditsManager:
         :return:ten digits in string format
         """
         return ""
-
-    def is_case_available(self, y, x):
-        """
-        Check if the case is available
-        :param y: y coordonate
-        :param x: x coordonate
-        :return: True if the case is available
-        """
-        # test wall existence
-        if self.map[y][x] == "#":
-            return False
-        for fighter in self.get_fighters():
-            # get fighter position
-            fighter_position_y = fighter.get_position().get_y()
-            fighter_position_x = fighter.get_position().get_x()
-            # test fighter existence
-            if fighter_position_y == y and fighter_position_x == x:
-                return False
-        return True
-
-    def is_case_available_without_current_fighter(self, y, x, current_fighter):
-        """
-        Check if the case is available but this time ignoring the current_fighter
-        :param y: y coordonate
-        :param x: x coordonate
-        :param current_fighter: the current fighter
-        :return: True if the case is available
-        """
-        # test wall existence
-        if self.map[y][x] == "#":
-            return False
-        # get current fighter position
-        current_fighter_position_y = current_fighter.get_position().get_y()
-        current_fighter_position_x = current_fighter.get_position().get_x()
-        for fighter in self.get_fighters():
-            # get fighter position
-            fighter_position_y = fighter.get_position().get_y()
-            fighter_position_x = fighter.get_position().get_x()
-            # test current fighter existence
-            if not (current_fighter_position_y == fighter_position_y and current_fighter_position_x == fighter_position_x):
-                # test fighter existence
-                if fighter_position_y == y and fighter_position_x == x:
-                    return False
-        return True
-
-    def is_case_on_cases(self, cases, y, x):
-        """
-        Check if the coordonate is in a specific list
-        :param cases: the list of cases
-        :param y: y coordonate of the case
-        :param x: x coordonate of the case
-        :return: True if the case exists on the specific list
-        """
-        for case in cases:
-            if case[0] == y and case[1] == x:
-                return True
-        return False
 
     def move_fighter(self, fighter):
         """
@@ -277,7 +223,12 @@ class BeverageBanditsManager:
                 adjacent_case_to_move = self.get_adjacent_case_to_move(current_fighter, chosen)
                 # move the current fighter
                 current_fighter.move_to(*adjacent_case_to_move)
-
+        else:
+            # TODO attack
+            pass
+    """
+    Getters
+    """
     def get_fighters(self):
         """
         Get the list of fighters
@@ -466,7 +417,9 @@ class BeverageBanditsManager:
         # get the distances sorted by coordonate
         distances = self.get_distances(chosen[0], chosen[1], adjacent_case_current_fighter)
         return distances[0][1], distances[0][2]
-
+    """
+    Add objects on map
+    """
     def add_current_fighter_on_map(self, current_fighter):
         """
         Add the current fighter on the map as 'E' for elve or 'G' for gobelin
@@ -521,7 +474,68 @@ class BeverageBanditsManager:
         """
         for ne in nearest_enemies:
             self.map[ne[0]][ne[1]] = "!"
+    """
+    Boolean functions
+    """
+    def is_case_available(self, y, x):
+        """
+        Check if the case is available
+        :param y: y coordonate
+        :param x: x coordonate
+        :return: True if the case is available
+        """
+        # test wall existence
+        if self.map[y][x] == "#":
+            return False
+        for fighter in self.get_fighters():
+            # get fighter position
+            fighter_position_y = fighter.get_position().get_y()
+            fighter_position_x = fighter.get_position().get_x()
+            # test fighter existence
+            if fighter_position_y == y and fighter_position_x == x:
+                return False
+        return True
 
+    def is_case_available_without_current_fighter(self, y, x, current_fighter):
+        """
+        Check if the case is available but this time ignoring the current_fighter
+        :param y: y coordonate
+        :param x: x coordonate
+        :param current_fighter: the current fighter
+        :return: True if the case is available
+        """
+        # test wall existence
+        if self.map[y][x] == "#":
+            return False
+        # get current fighter position
+        current_fighter_position_y = current_fighter.get_position().get_y()
+        current_fighter_position_x = current_fighter.get_position().get_x()
+        for fighter in self.get_fighters():
+            # get fighter position
+            fighter_position_y = fighter.get_position().get_y()
+            fighter_position_x = fighter.get_position().get_x()
+            # test current fighter existence
+            if not (current_fighter_position_y == fighter_position_y and current_fighter_position_x == fighter_position_x):
+                # test fighter existence
+                if fighter_position_y == y and fighter_position_x == x:
+                    return False
+        return True
+
+    def is_case_on_cases(self, cases, y, x):
+        """
+        Check if the coordonate is in a specific list
+        :param cases: the list of cases
+        :param y: y coordonate of the case
+        :param x: x coordonate of the case
+        :return: True if the case exists on the specific list
+        """
+        for case in cases:
+            if case[0] == y and case[1] == x:
+                return True
+        return False
+    """
+    Print examples
+    """
     # Targets current with list enemies
     def print_first_fighter_target(self):
         """
