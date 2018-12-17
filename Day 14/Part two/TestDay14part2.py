@@ -97,7 +97,7 @@ class ChocolateChartsManager:
         # process on recipes
         i = 0
         # exit when the input found
-        while self.recipes.find(str(self.after_number_recipe)) == -1:
+        while i < 30000000:
             # sum of two elves recipe
             sum_ = self.sum_recipes()
             # add the number
@@ -105,6 +105,7 @@ class ChocolateChartsManager:
             # move the elves
             self.next_elves_position()
             #print(i)
+            i += 1
             if debug:
                 if i > 999999 and i % 1000000 == 0:
                     print(i, " ", len(self.recipes))

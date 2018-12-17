@@ -175,7 +175,7 @@ class BeverageBanditsManager:
         if debug:
             print("Initially:")
             self.print_map()
-        while i < 1:
+        while i < 5:
             # compute a step
             self.step()
             if debug:
@@ -385,21 +385,50 @@ class BeverageBanditsManager:
                 reachable_enemies.append(ir)
         return reachable_enemies
 
-    def get_distances(self, y, x, reachables):
+    def case_down_goal(self, t):
+        """
+        In the case, we want to sort using y
+        :param t: tuple to sort
+        :return: new tuple with y coordonate inversed
+        """
+        tp = t[0], -t[1], t[2]
+        return tuple(tp)
+
+    def case_right_goal(self, t):
+        """
+        In the case, we want to sort using y
+        :param t: tuple to sort
+        :return: new tuple with y coordonate inversed
+        """
+        tp = t[0], t[1], -t[2]
+        return tuple(tp)
+
+    def get_distances(self, y, x, reachables, y_fighter=-100000, x_fighter=-100000):
         """
         Get the distances of the list of reachable cases sorted by the shortest path by fly bird
         :param y: y coordonate
         :param x: x coordonate
         :param reachables: list of reachable cases
+        :param y_goal: y coordonate for the goal
+        :param x_goal: x coordonate for the goal
         :return: distances of reachable with their corresponding coordonate
         """
         # get current fighter position
         distances = []
+        # TODO calculate distance with walls
+        print("reachables ", reachables)
+
         for reachable in reachables:
             t = abs(y - reachable[0]) + abs(x - reachable[1]), reachable[0], reachable[1]
             distances.append(tuple(t))
         # order the distance by distance
         distances = sorted(distances)
+        # sort with rule priority
+        """if y_fighter < y and y_fighter != -100000:
+            distances = sorted(distances, key=self.case_down_goal)
+        if x_fighter < x and x_fighter != -100000:
+            distances = sorted(distances, key=self.case_right_goal)
+        """
         return distances
 
     def get_nearest_enemies(self, current_fighter, reachables):
@@ -422,6 +451,15 @@ class BeverageBanditsManager:
             return [(current_fighter_position_y, current_fighter_position_x)]
         return nearest_enemies
 
+    def calculate_number_case_from_case_to_chosen(self, case, chosen):
+        """
+        The number of movement to reach the goal
+        :param case: y and x coordonate source
+        :param chosen: y and x coordonate destination
+        :return: the number of case to reach the goal
+        """
+        visited_case = []
+
     def get_adjacent_case_to_move(self, current_fighter, chosen):
         """
         Get the best adjacent case to move
@@ -434,26 +472,17 @@ class BeverageBanditsManager:
         current_fighter_position_x = current_fighter.get_position().get_x()
         # get the adjacent case of the current fighter
         adjacent_case_current_fighter = self.get_adjacent_available_case(current_fighter_position_y, current_fighter_position_x)
-
-
-        # nous allons savoir où le guerrier doit se diriger
-        # a chaque fois qu on test en prend en compte les cases visitees
-        # un test se deroule de cette maniere
-        #    en fonction de la position initiale et la position finale
-        #          nous savons que nous devons aller dans cette direction
-        #          s il n y a pas d'acces possible utiliser la deuxième direction
-        #          de meme si c'est pas possible
-        #          sinon c est bloque et on recommence la visite du debut en choisissant une case qui n a pas ete visite*
-        #          lorsque nous arrivons a destination c est bon
-
+        # TODO for each case calculate the number of distance with walls
 
 
         # get the distances sorted by coordonate
-        distances = self.get_distances(chosen[0], chosen[1], adjacent_case_current_fighter)
-
-        # check if with distances[0] there was available area
-        print(distances)
+        distances = self.get_distances(chosen[0], chosen[1], adjacent_case_current_fighter, current_fighter_position_y, current_fighter_position_x)
+        # sort the coordonate again using initial and final position
+        # check if with first distances there was available area
         while True:
+            # case we reach the goal
+            if len(distances) == 0:
+                return chosen[0], chosen[1]
             # a reachable area is an area wich our current fighter can move
             reachable_area = self.get_reachable_area(distances[0][1], distances[0][2])
             # if chosen case is available on area we can move
