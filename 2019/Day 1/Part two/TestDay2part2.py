@@ -70,9 +70,25 @@ class TestDay1part2(unittest.TestCase):
 
     def test_day_1_part_2(self):
         lines = input_file()
-        res = output_file()
-        line1_res, line2_res = best_match_str(lines)
-        assert(sub_str(line1_res, line2_res) == res[0])
+        #res = output_file()
+        #line1_res, line2_res = best_match_str(lines)
+        fuels = []
+        for fuel in lines:
+            tmp_fuel = []
+            current_fuel = int(fuel)
+            while current_fuel > 0:
+                int_fuel = int(current_fuel/3)-2
+                if int_fuel > 0:
+                    tmp_fuel.append(int_fuel)
+                else:
+                    tmp_fuel.append(0)
+                current_fuel = int_fuel
+            fuels.append(sum(tmp_fuel))
+        print(sum(fuels))
+
+
+
+        #assert(sub_str(line1_res, line2_res) == res[0])
 
 
 if __name__ == '__main__':
