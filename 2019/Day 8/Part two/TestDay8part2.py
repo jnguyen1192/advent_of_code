@@ -59,6 +59,7 @@ class TestDay8part2(unittest.TestCase):
                     layer = []
                     i_layer = 1
             return layers
+
         def first_pixel_found(sum):
             #print(sum)
             for i in sum:

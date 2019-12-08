@@ -125,6 +125,8 @@ class TestDay5part1(unittest.TestCase):
             length = len(code)
             try:
                 while i < length:
+                    if code[i] == 99:
+                        break
                     # TODO add mode on opcode
                     # add 0 at the beginning of 1
                     tmp_cur = code[i]
@@ -186,12 +188,10 @@ class TestDay5part1(unittest.TestCase):
                         else:
                             code[third_param] = 0
                         i += 4
-                    elif code[i] == 99:
-                        break
                     #i += 1
                     #print(i, code)
             except:
-                #print(i, code)
+                print("except")
                 return value
                 #print(i, code)
 
