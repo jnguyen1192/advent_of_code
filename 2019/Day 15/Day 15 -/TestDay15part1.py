@@ -268,6 +268,7 @@ class TestDay15part1(unittest.TestCase):
         possible_move = []
         walls = []
         while output_ != 2:
+            i = 0
             print(i, input_, output_, code[i:i + 5])
             output_, code, i = process(0, input_, i, code, False)
             cur_x, cur_y = current_pos

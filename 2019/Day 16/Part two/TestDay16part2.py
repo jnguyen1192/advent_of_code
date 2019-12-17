@@ -42,9 +42,14 @@ class TestDay16part2(unittest.TestCase):
                 #print(len(signal_))
                 for s in signal_:
                     #str_calc += str(s) + " * " + str(current_pattern[current_pos_pattern%len(current_pattern)]) + " + "
-                    sum += current_pattern[current_pos_pattern % len(current_pattern)] * s
+                    if current_pattern[current_pos_pattern % len(current_pattern)] != 0 or s != 0:
+                        sum += current_pattern[current_pos_pattern % len(current_pattern)] * s
 
                     current_pos_pattern += 1
+                # TODO sum de tous les -1
+                # TODO sum de tous les +1
+                #
+                print(sum)
                 #str_calc += " = " + str(sum)
                 #print(str_calc)
                 #print(abs(sum)%10)
@@ -55,27 +60,23 @@ class TestDay16part2(unittest.TestCase):
                 #print("signal_", signal_)
                 #print(len(signal_))
                 for i in range(1, len(signal_) + 1):
+                    print(i)
                     new_list.append(process_element(signal_, i))
                 return new_list
             # TODO real signal = 10000 * signal
-
-            current_signal = signal#[s for s in signal] * 100000
+            #current_signal = signal
+            current_signal = [s for s in signal] * 100000
             # TODO get the first 7th number
-            #first_seventh = int("".join([str(i) for i in current_signal[:7]]))
+            first_seventh = int("".join([str(i) for i in current_signal[:7]]))
             # TODO skip [first_seventh:first_seventh+8]
             for i in range(nb_phase):
                 #print(i)
                 current_signal = new_signal(current_signal)
-                #print("After phase", i + 1, current_signal)
-            return current_signal[:8]#current_signal[first_seventh:first_seventh+8]
+                print("After phase", i + 1, current_signal[:8])
+            #return current_signal[:8]#
+            return current_signal[first_seventh:first_seventh+8]
 
         print("".join([str(i) for i in FFT(signal, 100)]))
-        # TODO create new input signal
-        #current_signal = [s for s in signal] * 100000
-        #print(current_signal[:7])
-        #first_seventh = int("".join([str(i) for i in current_signal[:7]]))
-        #print(first_seventh)
-        #print(current_signal[first_seventh:first_seventh+8])
 
 
 
