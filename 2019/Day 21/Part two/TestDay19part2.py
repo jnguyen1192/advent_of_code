@@ -20,9 +20,9 @@ def output_file():
     return res
 
 
-class TestDay21part1(unittest.TestCase):
+class TestDay19part5(unittest.TestCase):
 
-    def test_day_21_part_1(self):
+    def test_day_19_part_5(self):
         text = input_file()
 
         def process(phase_setting, value, i, code, phase):
@@ -85,7 +85,7 @@ class TestDay21part1(unittest.TestCase):
 
                     if opcode == 1:  # addition
                         # case param 3
-                        debug = "addition " + str(third_param) + " " + str(first_param) + " + " + str(second_param) + " "\
+                        debug = "addition " + str(third_param) + " " + str(first_param) + " + " + str(second_param) + " " \
                                 + str(len(code)) + " " + str(third_param) + " " + str(len(code) - third_param)
                         if first_param > len(code):
                             code += [0] * (1 + first_param - len(code))
@@ -94,7 +94,7 @@ class TestDay21part1(unittest.TestCase):
                         i += 4
                     elif opcode == 2:  # multiplication
                         # case param 3
-                        debug = "multiplication " + str(third_param) + " " + str(first_param) + " + " + str(second_param) + " "\
+                        debug = "multiplication " + str(third_param) + " " + str(first_param) + " + " + str(second_param) + " " \
                                 + str(len(code)) + " " + str(len(code) - third_param)
                         if first_param >= len(code):
                             code += [0] * (1 + first_param - len(code))
@@ -165,66 +165,118 @@ class TestDay21part1(unittest.TestCase):
                 return value, i, end, code, phase
             return value, code, i#, i, end, code, phase
 
-        def get_ouput(code, inputs):
+        def print_somethings(somethings, square_size, x, y):
+            max_x = max([x for x, y in somethings])
+            max_y = max([y for x, y in somethings])
+            str_int = ""
+            for j in range(max_y + 1):
+                for i in range(max_x + 1):
+                    if (i, j) == (x, y):
+                        str_int += "O"
+                    elif (i, j) in somethings:
+                        str_int += "#"
+                    else:
+                        str_int += "."
+                str_int += "\n"
+            print(str_int)
+
+        def is_something(x, y):
+            #print("Is_something")
+
+            code = [int(val) for val in text.split(",")]
             i = 0
-            output = None
-            for input_ in inputs:
-                output, code, i = process(0, input_, i, code, False)
+            value, code, i = process(y, x, i, code, True)
+            #value, code, i = process(0, y, i, code, False)
+            #print(x, y, value)
+            if value == 1:
+                return True
+            return False
 
-            return output
+        def get_current_size_square(somethings):
+            # Get width current line
+            somethings = sorted(somethings, key=lambda x: x[1])
+            last_y = somethings[-1][1]
+            #print(somethings[-2:])
+            width_line = 0
+            first_x = 10000000000000
+            for something in somethings:
+                if something[1] == last_y:
+                    if something[0] < first_x:
+                        first_x = something[0]
+                    width_line += 1
+            #print("width_line",width_line)
+            # get the height of first x of last line
+            square_size = 0
+            for i in range(width_line):
+                if (first_x + i, last_y - i) in somethings:
+                    square_size += 1
+                else:
+                    break
+            # TODO remove the somethings before last_y - square_size
+            for something in somethings:
+                if something[1] < last_y - square_size:
+                    somethings.remove(something)
+            return (first_x, last_y - square_size + 1), square_size, somethings
 
-        code = [int(val) for val in text.split(",")]
-        #map = get_map_using_ascii_program(code)
-        # TODO jump over holes
-        # NOT D J Jumps if and only if there is no ground four tiles away
-        s = """NOT A J
-NOT B T
-OR T J
-NOT C T
-OR T J
-AND D J
-WALK
-"""
+        def print_tractor_beam(y_range_max, x_range_max, square_size, y_range_min):
+            c = 0
+            somethings = []
+            something_detected = False
+            last_something_length = 0
+            last_square_size = 0
+            for y in range(y_range_min, y_range_max):
+                #print(y)
+                current_somethings = []
+                x = last_something_length
+                while True:
+                    if is_something(x, y):
+                        # Si c'est la premiere detection, on ajoute la largeur précédente des choses
+                        if not something_detected:
+                            for i in range(last_something_length):
+                                if x >= x_range_max:
+                                    break
+                                somethings.append((x, y))
+                                current_somethings.append((x, y))
+                                x += 1
+                                c += 1
+                            something_detected = True
+                            continue
+                        # Sinon nous ajoutons les nouvelles choses
+                        somethings.append((x, y))
+                        current_somethings.append((x, y))
+                        c += 1
+                    # si il y a eu une detection et un nouveau point
+                    elif something_detected or x == 1000:
+                        x += 1
+                        break
+                    #print(y, x, something_detected, somethings)
+                    x += 1
 
-        # NOT A J Jump only if there was a hole at 1
-        # NOT B T If B False T = True
-        # AND T J Jump only if there was a hole at 2
-        # NOT C T If C Falste T = True
-        # AND T J Jump only if there was a hole at 3
-        # AND D J Jump if there was a ground after 3 hole
-        # > Jump only if there was a ground after 3 hole
-        # TODO we want the robot jump
-        #   1 If there was a hole in front of us and a ground at 2
-        #   2 Or there was a hole at 2 and a ground at 3
-        #   3 Or there was a hole at 3 and a ground at 4
-        # TODO
-        #   1   NOT A J Jump only if there was a hole at 1
-        #       AND B J Jump if there was a ground after 2 hole
+                # get length current somethings
+                last_something_length = len(current_somethings) - 1
+                something_detected = False
+                # TODO check the current size of square
+                (x_square, y_square), current_size_square, somethings = get_current_size_square(somethings)
+                if last_square_size < current_size_square:
+                    last_square_size = current_size_square
+                    print((x_square, y_square), current_size_square, len(somethings))
+                if current_size_square == square_size:
+                    print((x_square, y_square), current_size_square)
+                    break
+            print_somethings(somethings, 10, x_square, y_square)
+            #print(c)
+            #print(len(somethings))
+            #print(len(list(set(somethings))))
+            #print(somethings)
+        square_size = 100
+        i = 0
+        y_range_max = 10000
+        x_range_max = 10000
+        print_tractor_beam(y_range_max, x_range_max, square_size, 0) # 9 s for 50, 50
+        # for each line complete
+        # check if the square fit in
 
 
-
-        inputs = [ord(c) for c in s]
-        print(inputs)
-        print("output", get_ouput(code, inputs))
-        # Move forward automatically
-
-        # only 15 springscript instructions
-        # only use boolean values
-        # T: temporary register
-        # J: jump register
-        # T and J begin in False
-        # If J True jump
-        # A: 1 tile away
-        # B: 2 tiles away
-        # C ...
-        # D ...
-        # Registrer True: ground
-        # Register False: hole
-        # AND X Y: True if X and Y are true
-        # OR ...
-        # NOT ...
-        # Y: Second argument writable T or J
-        # X: A, B, C or D
 
 
 
