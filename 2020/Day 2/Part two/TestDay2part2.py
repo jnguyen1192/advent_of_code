@@ -26,9 +26,9 @@ def get_nb_pass_valid(lines):
         c = 0  # initialize count
         #for letter_password in password:  # for each letter in password
         if letter == password[int(min_policy)-1]:  # case there was the letter to test in min policy
-                c += 1  # increment count
+            c += 1  # increment count
         if letter == password[int(max_policy)-1]:  # case there was the letter to test in min policy
-                c += 1  # increment count
+            c += 1  # increment count
         if c == 1:
             nb_pass += 1
     return nb_pass  # case it won't work
