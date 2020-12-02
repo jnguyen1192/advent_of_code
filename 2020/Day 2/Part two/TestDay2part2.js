@@ -1035,8 +1035,8 @@ function nb_valid_pass_part1(lines) {
 }
 
 var assert = require('assert'); // Unit test library
-describe('Day 1', function() {
-    it('NbValidPassPart12020', function() {
+describe('Day 2', function() {
+    it('NbValidPassPart22020', function() {
         var lines = input.split("\n"); // get lines
         var res = nb_valid_pass_part1(lines); // process
         //console.log(res);
