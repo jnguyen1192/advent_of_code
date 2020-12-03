@@ -15,37 +15,35 @@ def output_file():
     file.close()
     return res
 
-from pprint import pprint
+
 def get_nb_tree_encounter(lines):
-    move_right = 3  # move 3 at right
-    move_down = 1  # move 3 at bottom
-    current_pos = (0, 0)  # start at the top-left
-    nb_tree_encounter = 0
     width_pattern = len(lines[0])  # get width pattern
     height_pattern = len(lines)  # get height pattern
-    pattern_multiplication = int(height_pattern / width_pattern)  +  (height_pattern % width_pattern > 0)# estimate pattern multiplication
     map = []  # initialize map
     for line in lines:  # get first pattern
-        line_map = []
-        for col in line:
-            line_map.append(col)
-        map.append(line_map)
-    while current_pos[1] < height_pattern - 1:
-        current_pos = ((current_pos[0] + move_right) % width_pattern, (current_pos[1] + move_down))
-        #print(current_pos , height_pattern, len(map))
-        if map[current_pos[1]][current_pos[0]] == "#":
-            nb_tree_encounter += 1
-    #pprint(map)
+        line_map = []  # init line
+        for col in line:  # for each column
+            line_map.append(col)  # add a tree or an open path
+        map.append(line_map)  # add a line in the map
 
+    move_list = [(3, 1)]  # intialize moves to do
 
-    # loop until the bottom is reached
-    #  navigate on first pattern
+    # count tree
+    def get_nb_tree_encounter_using_map_and_moves(map, move):  # function to use in first part
+        current_pos = (0, 0)  # start at the top-left
+        nb_tree_encounter = 0  # initialize the count
+        while current_pos[1] < height_pattern - 1:  # browse until the end
+            current_pos = ((current_pos[0] + move[0]) % width_pattern, (current_pos[1] + move[1]))  # add a move
+            if map[current_pos[1]][current_pos[0]] == "#":  # test if there was a tree
+                nb_tree_encounter += 1  # add into the count
+        return nb_tree_encounter  # return the nb of tree encounter
 
+    nb_tree_encounter_product = 1  # initialize the count
+    for move in move_list:  # for each moves in the move list
+        nb_tree_encounter_product *= get_nb_tree_encounter_using_map_and_moves(map,
+                                                                               move)  # get the number of tree encounter and multiply
 
-
-    # move and counting until the bottom
-
-    return nb_tree_encounter  # case it won't work
+    return nb_tree_encounter_product  # case it won't work
 
 
 class TestDay3part1(unittest.TestCase):
@@ -55,7 +53,7 @@ class TestDay3part1(unittest.TestCase):
         res = output_file()  # get output
         pred = get_nb_tree_encounter(lines)  # process
         print(pred)  # print
-        #assert(str(pred) == res[0])  # check
+        assert(str(pred) == res[0])  # check
 
 
 if __name__ == '__main__':
