@@ -35,6 +35,7 @@ def get_nb_valid_password(lines):
                 if char not in valid_chars:  # check if each char are in valid chars
                     return False
             return True
+        return False
 
     def is_valid_integrity(key, password_to_check):
         if key == "byr":
