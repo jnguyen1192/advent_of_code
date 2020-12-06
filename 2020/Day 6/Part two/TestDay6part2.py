@@ -16,7 +16,7 @@ def output_file():
     return res
 
 
-def get_sum_group_count_yes(lines):
+def get_sum_group_count_yes_all(lines):
     letters = "abcdefghijklmnopqrstuvwxyz"  # initialize all char to count
     group_yes = []  # initialize group of yes
     group_count = dict()  # initialize each group letter count
@@ -26,6 +26,7 @@ def get_sum_group_count_yes(lines):
         for key in group_count:  # for each answer
             if group_count["nb_group"] == group_count[key] and key != "nb_group":  # if the number of yes equals number of people
                 yield 1  # return 1
+
     for char in letters:  # for each letter
         group_count[char] = 0  # initialize count as 0
     for line in lines:  # for each people
@@ -43,12 +44,12 @@ def get_sum_group_count_yes(lines):
     return sum(group_yes)  # return nb of valid password
 
 
-class TestDay5part1(unittest.TestCase):
+class TestDay6part2(unittest.TestCase):
 
-    def test_day_5_part_1(self):
+    def test_day_6_part_2(self):
         lines = input_file()  # get input
         res = output_file()  # get output
-        pred = get_sum_group_count_yes(lines)  # process
+        pred = get_sum_group_count_yes_all(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 

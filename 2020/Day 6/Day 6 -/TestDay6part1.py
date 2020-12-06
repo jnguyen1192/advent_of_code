@@ -32,9 +32,9 @@ def get_sum_group_count_yes(lines):
     return sum(group_yes)  # return nb of valid password
 
 
-class TestDay5part1(unittest.TestCase):
+class TestDay6part1(unittest.TestCase):
 
-    def test_day_5_part_1(self):
+    def test_day_6_part_1(self):
         lines = input_file()  # get input
         res = output_file()  # get output
         pred = get_sum_group_count_yes(lines)  # process
