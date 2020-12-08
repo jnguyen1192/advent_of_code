@@ -41,9 +41,9 @@ def get_nb_bag_colors_one_shiny_gold_bag(lines):
     return final_value  # return nb of valid password
 
 
-class TestDay6part1(unittest.TestCase):
+class TestDay7part2(unittest.TestCase):
 
-    def test_day_6_part_1(self):
+    def test_day_7_part_2(self):
         lines = input_file()  # get input
         res = output_file()  # get output
         pred = get_nb_bag_colors_one_shiny_gold_bag(lines)  # process
