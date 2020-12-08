@@ -23,7 +23,7 @@ def get_accumulator(lines):
             self.instructions = []  # initialize instructions
             self.history = {"i": []}  # initialize history
 
-        def prepare_instructions(self,lines):
+        def prepare_instructions(self, lines):
             for line in lines:  # for each linse
                 instr, number_raw = line.split(" ")  # extract the instruction and value
                 self.instructions.append((instr, int(number_raw[1:]) if number_raw[0] == "+" else -int(
