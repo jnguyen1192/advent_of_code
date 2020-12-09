@@ -4,7 +4,7 @@ import re
 
 
 def input_file():
-    # read lines of input file
+    # read lines of input_test file
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -12,7 +12,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -52,7 +52,7 @@ def is_claim_complete_u(area, left_edge, top_edge, width, tall):
 
 
 def read_input(lines):
-    # init input
+    # init input_test
     left_edge = []
     top_edge = []
     width = []

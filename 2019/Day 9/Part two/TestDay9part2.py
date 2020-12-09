@@ -3,7 +3,7 @@ from parse import parse
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -11,7 +11,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -75,15 +75,15 @@ class TestDay9part1(unittest.TestCase):
                         tmp = self.code[first_param] * self.code[second_param]
                         self.code[third_param] = tmp
                         self.i += 4
-                    elif opcode == 3:  # as input 3, 50 => 3 take input and save to address 50
+                    elif opcode == 3:  # as input_test 3, 50 => 3 take input_test and save to address 50
                         if self.phase:
                             self.code[first_param] = phase_setting
                             self.phase = False
                         else:
                             self.code[first_param] = input
                         self.i += 2
-                    elif opcode == 4:  # as output 4, 50 => 4 output the value at address 50
-                        # print("as input 3, 50 => 3 take input and save to address 50")
+                    elif opcode == 4:  # as output_1 4, 50 => 4 output_1 the value at address 50
+                        # print("as input_test 3, 50 => 3 take input_test and save to address 50")
                         self.i += 2
                         output = self.code[first_param]
                         return output

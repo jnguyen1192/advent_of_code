@@ -4,7 +4,7 @@ import re
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -12,7 +12,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = file.read()
     file.close()
@@ -230,7 +230,7 @@ def data_preparation(data):
     max_x, min_x, max_y, min_y = get_border(data)
     # using those borders, we get new points
     # we only have to add the opposite min to each x and y value
-    # fufill the cloud points and velocities using input text
+    # fufill the cloud points and velocities using input_test text
     for raw in data:
         cloud_points.append(Cloud_point(Position(raw[0]-min_x, raw[1]-min_y), Velocity(raw[2], raw[3])))
     return cloud_points, velocities

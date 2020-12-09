@@ -35,7 +35,7 @@ def build_claim_u(left_edge, top_edge, width, tall):
 
 
 def read_input(lines):
-    # init input
+    # init input_test
     left_edge = []
     top_edge = []
     width = []

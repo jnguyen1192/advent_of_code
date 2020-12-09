@@ -5,7 +5,7 @@ from pprint import pprint
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -13,7 +13,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -106,8 +106,8 @@ class TestDay19part6(unittest.TestCase):
                         code[third_param] = tmp
                         i += 4
                     # TODO code 3 and code 4
-                    elif opcode == 3:  # as input 3, 50 => 3 take input and save to address 50
-                        debug = "input" + str(first_param) + str(len(code))
+                    elif opcode == 3:  # as input_test 3, 50 => 3 take input_test and save to address 50
+                        debug = "input_test" + str(first_param) + str(len(code))
                         if first_param >= len(code):
                             code += [0] * (1 + first_param - len(code))
                             debug += " " + str(len(code))
@@ -117,9 +117,9 @@ class TestDay19part6(unittest.TestCase):
                         else:
                             code[first_param] = value
                         i += 2
-                    elif opcode == 4:  # as output 4, 50 => 4 output the value at address 50
-                        debug = "output"
-                        # print("as input 3, 50 => 3 take input and save to address 50")
+                    elif opcode == 4:  # as output_1 4, 50 => 4 output_1 the value at address 50
+                        debug = "output_1"
+                        # print("as input_test 3, 50 => 3 take input_test and save to address 50")
                         i += 2
                         value = code[first_param]
                         return value, code, i#i, end, code, phase

@@ -3,7 +3,7 @@ from parse import parse
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -11,7 +11,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -65,7 +65,7 @@ class TestDay5part1(unittest.TestCase):
         while noun < 99:
             while verb < 99:
                 output = process(noun, verb, text)
-                #print(noun, verb, output)
+                #print(noun, verb, output_1)
                 if output == 19690720:
                     print(100 * noun + verb)
                     break

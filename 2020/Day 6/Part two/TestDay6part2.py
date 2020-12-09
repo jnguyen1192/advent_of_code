@@ -47,8 +47,8 @@ def get_sum_group_count_yes_all(lines):
 class TestDay6part2(unittest.TestCase):
 
     def test_day_6_part_2(self):
-        lines = input_file()  # get input
-        res = output_file()  # get output
+        lines = input_file()  # get input_test
+        res = output_file()  # get output_1
         pred = get_sum_group_count_yes_all(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check

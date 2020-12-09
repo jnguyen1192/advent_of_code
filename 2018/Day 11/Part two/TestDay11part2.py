@@ -3,7 +3,7 @@ import numpy as np
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -11,7 +11,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = file.read()
     file.close()
@@ -53,9 +53,9 @@ class Fuel:
             rack_id = 0
         # TODO optimize
         """
-        if self.input > 999:
+        if self.input_test > 999:
             rack_id = int(str(rack_id)[-3:])
-        if self.input > 
+        if self.input_test > 
         """
         return rack_id - 5
 
@@ -111,7 +111,7 @@ def data_retrieve(lines):
 
 
 def data_preparation(data):
-    # return the value of input
+    # return the value of input_test
     return int(data[0])
 
 

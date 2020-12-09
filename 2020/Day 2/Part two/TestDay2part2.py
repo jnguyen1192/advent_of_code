@@ -37,8 +37,8 @@ def get_nb_pass_valid(lines):
 class TestDay2part2(unittest.TestCase):
 
     def test_day_2_part_2(self):
-        lines = input_file()  # get input
-        res = output_file()  # get output
+        lines = input_file()  # get input_test
+        res = output_file()  # get output_1
         pred = get_nb_pass_valid(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check

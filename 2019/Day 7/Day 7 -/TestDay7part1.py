@@ -3,7 +3,7 @@ from parse import parse
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -11,7 +11,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -66,16 +66,16 @@ class TestDay7part1(unittest.TestCase):
                         code[third_param] = code[first_param] * code[second_param]
                         i += 4
                     # code 3 and code 4
-                    elif opcode == 3:  # as input 3, 50 => 3 take input and save to address 50
+                    elif opcode == 3:  # as input_test 3, 50 => 3 take input_test and save to address 50
                         if phase:
                             code[first_param] = phase_setting
                             phase = False
                         else:
                             code[first_param] = value
                         i += 2
-                    elif opcode == 4:  # as output 4, 50 => 4 output the value at address 50
+                    elif opcode == 4:  # as output_1 4, 50 => 4 output_1 the value at address 50
                         value = code[first_param]
-                        # print("as input 3, 50 => 3 take input and save to address 50")
+                        # print("as input_test 3, 50 => 3 take input_test and save to address 50")
                         i += 2
                     elif opcode == 5:  # jump-if-true
                         if code[first_param] != 0:
@@ -115,7 +115,7 @@ class TestDay7part1(unittest.TestCase):
         # be careful with i += ?
         def ACS(A, B, C, D, E):
             # first step
-            # first setting input
+            # first setting input_test
             o_a = process(text, A, 0)
 
             o_b = process(text, B, o_a)

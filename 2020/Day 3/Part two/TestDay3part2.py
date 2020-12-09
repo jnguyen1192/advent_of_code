@@ -52,8 +52,8 @@ def get_nb_tree_encounter_product(lines):
 class TestDay3part2(unittest.TestCase):
 
     def test_day_3_part_2(self):
-        lines = input_file()  # get input
-        res = output_file()  # get output
+        lines = input_file()  # get input_test
+        res = output_file()  # get output_1
         pred = get_nb_tree_encounter_product(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check

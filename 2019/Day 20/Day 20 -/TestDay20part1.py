@@ -5,7 +5,7 @@ from pprint import pprint
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -13,7 +13,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -24,14 +24,14 @@ class TestDay20part1(unittest.TestCase):
 
     def test_day_20_part_1(self):
         text = input_file()
-        # TODO 1: Extract the input as :
+        # TODO 1: Extract the input_test as :
         #   First extract the map using #, . and empty
         #   For each "." near empty determine the portal to assign
         #   For each portal
         #       Find the next possible portal
 
         # TODO 2: Find less path algorithm:
-        #   input: a coord(x, y)
+        #   input_test: a coord(x, y)
         #   ouput: a list [(portal1, portal2, number_steps), ...]
         #   declare a list of path
         #   declare a list of steps

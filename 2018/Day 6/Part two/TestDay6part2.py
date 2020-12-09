@@ -3,7 +3,7 @@ import numpy as np
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -11,7 +11,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -89,7 +89,7 @@ def day_6_part_2(lines):
     areas = normalize_areas(maxx, maxy, factor_to_finite, areas)
     # total_distance_of_all_given_coordonate
     # less than 10000
-    inertie = 10000  # or 32 for the little input
+    inertie = 10000  # or 32 for the little input_test
     # goal : create region with distance inferior 10000
     # transform grid to a region using areas with a minimum inertie
     set_grid_using_areas_with_inertie(grid, areas, inertie)

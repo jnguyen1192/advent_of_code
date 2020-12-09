@@ -2,7 +2,7 @@ import unittest
 
 
 def input_file():
-    # read lines of input file
+    # read lines of input_test file
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -10,7 +10,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -37,8 +37,8 @@ def find_sum_2020_part2(lines):
 class TestDay1part2(unittest.TestCase):
 
     def test_day_1_part_2(self):
-        lines = input_file()  # get input
-        res = output_file()  # get output
+        lines = input_file()  # get input_test
+        res = output_file()  # get output_1
         pred = find_sum_2020_part2(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check

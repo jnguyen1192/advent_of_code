@@ -5,7 +5,7 @@ from pprint import pprint
 
 
 def input_file():
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     text = file.read()
     file.close()
@@ -13,7 +13,7 @@ def input_file():
 
 
 def output_file():
-    # read line of output file
+    # read line of output_1 file
     file = open('output', 'r')
     res = [line.rstrip('\n') for line in file]
     file.close()
@@ -75,16 +75,16 @@ class TestDay25part1(unittest.TestCase):
                     elif opcode == 2:  # multiplication
                         self.code[third_param] = self.code[first_param] * self.code[second_param]
                         self.i += 4
-                    elif opcode == 3:  # as input 3, 50 => 3 take input and save to address 50
+                    elif opcode == 3:  # as input_test 3, 50 => 3 take input_test and save to address 50
                         if self.phase:
                             self.code[first_param] = phase_setting
                             self.phase = False
                         else:
-                            #print("Input case", self.i, self.code[first_param], input, first_param)
+                            #print("Input case", self.i, self.code[first_param], input_test, first_param)
                             self.code[first_param] = input
                         self.i += 2
-                    elif opcode == 4:  # as output 4, 50 => 4 output the value at address 50
-                        # print("as input 3, 50 => 3 take input and save to address 50")
+                    elif opcode == 4:  # as output_1 4, 50 => 4 output_1 the value at address 50
+                        # print("as input_test 3, 50 => 3 take input_test and save to address 50")
                         self.i += 2
                         output = self.code[first_param]
                         return output
@@ -122,9 +122,9 @@ class TestDay25part1(unittest.TestCase):
             #print(command, inputs)
             outputs = []
             for input_ in inputs:
-                #print("Before output", input_, chr(input_))
+                #print("Before output_1", input_, chr(input_))
                 output = ic.run(input_)
-                #print(output)
+                #print(output_1)
                 outputs.append(output)
 
             str_ascii = ""

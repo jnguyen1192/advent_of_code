@@ -41,8 +41,8 @@ def find_sum_2020(lines):
 class TestDay1part1(unittest.TestCase):
 
     def test_day_1_part_1(self):
-        lines = input_file()  # get input
-        res = output_file()  # get output
+        lines = input_file()  # get input_test
+        res = output_file()  # get output_1
         pred = find_sum_2020(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check

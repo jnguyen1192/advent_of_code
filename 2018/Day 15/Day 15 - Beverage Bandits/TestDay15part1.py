@@ -3,10 +3,10 @@ import unittest
 
 def input_file():
     """
-    Function to read the input file called 'input'
+    Function to read the input_test file called 'input_test'
     :return: the lines of the file
     """
-    # return the input file in a text
+    # return the input_test file in a text
     file = open('input', 'r')
     lines = [line.rstrip('\n') for line in file]
     file.close()
@@ -15,7 +15,7 @@ def input_file():
 
 def output_file():
     """
-    Function to read the output file called 'output'
+    Function to read the output_1 file called 'output_1'
     :return: the text of the file
     """
     file = open('output', 'r')
@@ -188,7 +188,7 @@ class BeverageBanditsManager:
 
     def visualize(self):
         """
-        Get the ten digits after the number of recipes in input
+        Get the ten digits after the number of recipes in input_test
         :return:ten digits in string format
         """
         return ""
@@ -776,12 +776,12 @@ class BeverageBanditsManager:
 
 class ObjectBuilder:
     """
-    Builder to instanciate objects from the input
+    Builder to instanciate objects from the input_test
     """
     def __init__(self, lines):
         """
-        Build the fighters and the map from the input
-        :param lines: the lines of the input file
+        Build the fighters and the map from the input_test
+        :param lines: the lines of the input_test file
         """
         self.lines = lines
         self.fighters = self.build_fighters()
@@ -789,7 +789,7 @@ class ObjectBuilder:
 
     def find_all_fighter(self, line, y, classification):
         """
-        Find all the fighter from the input file
+        Find all the fighter from the input_test file
         :param line: the line to analyse
         :param y: the number of line to analyse
         :param classification: the fighter classification as 'E' for elve or 'G' for gobelin
@@ -810,7 +810,7 @@ class ObjectBuilder:
         """
         Create the map containing walls and dots while removing the fighter
         """
-        # get the map from the input file
+        # get the map from the input_test file
         map = []
         for line in self.lines:
             line_list = []
@@ -824,13 +824,13 @@ class ObjectBuilder:
 
     def build_fighters(self):
         """
-        Create the list of fighter objects using input file
+        Create the list of fighter objects using input_test file
         """
         # return a list of carts as (x, y, direction of cart)
         fighters = []
         fighters_object = []
         y = 0
-        # browse each line of the input file
+        # browse each line of the input_test file
         for line in self.lines:
             # case elve
             elves = self.find_all_fighter(line, y, "E")
@@ -875,7 +875,7 @@ class ObjectBuilder:
 def data_retrieve(lines):
     """
     Retrieve the data from the file
-    :param lines: lines of input file
+    :param lines: lines of input_test file
     :return: the new lines traited
     """
     return lines
