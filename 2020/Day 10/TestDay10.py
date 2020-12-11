@@ -37,8 +37,7 @@ def get_chain_outlet(lines):
 
 def get_all_distinct_number_chain_outlet(lines):  #  https://dev.to/qviper/advent-of-code-2020-python-solution-day-10-30kd
     result = {0: 1}  # init first combination
-    adapters = [int(line) for line in lines]  # get each element
-    for adapter in sorted(adapters):  # for each element
+    for adapter in sorted([int(line) for line in lines]):  # for each element
         result[adapter] = 0  # begin with value 0
         if adapter - 1 in result:  # case before number
             result[adapter] += result[adapter - 1]  # add result of before number
@@ -47,7 +46,7 @@ def get_all_distinct_number_chain_outlet(lines):  #  https://dev.to/qviper/adven
         if adapter - 3 in result:  # case before -3 number
             result[adapter] += result[adapter - 3]  # add result of before -3    number
     print(result)
-    return result[max(adapters)]
+    return result[max(result.keys())]
 
 
 class TestDay10(unittest.TestCase):
