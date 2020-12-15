@@ -126,7 +126,5 @@ class Test(unittest.TestCase):
         print(pred)
         assert(str(pred) == res[0])  # check https://github.com/busdriverbuddha/aoc2020_solutions/blob/main/day13.py
 
-
-
 if __name__ == '__main__':
     unittest.main()
