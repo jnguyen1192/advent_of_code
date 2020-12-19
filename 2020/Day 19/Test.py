@@ -14,23 +14,22 @@ def output_file(number):
     file.close()
     return res
 
-import re
+def get_nb_valid_line(lines):
+    import re  # https://www.reddit.com/r/adventofcode/comments/kg1mro/2020_day_19_solutions/ 4HbQ
+    rs, ms = open('input_day').read().split('\n\n')
+    rs += '\n8: 42 | 42 8\n11: 42 31 | 42 11 31'  # part 2
+    rs = dict([line.split(': ') for line in rs.split('\n')])
 
+    def f(r='0', n=0):
+        if n > 20: return ''
+        if rs[r][0] == '"': return rs[r][1]
+        return '(' + '|'.join([''.join([f(t, n + 1)
+                                        for t in s.split()]) for s in rs[r].split('|')]) + ')'
 
-class M(int):
-    def __sub__(self, y): return M(int(self) * y)
+    r = re.compile(f())
+    print(len([*filter(r.fullmatch, ms.split())]))
 
-    def __add__(self, y): return M(int(self) + y)
-
-    def __mul__(self, y): return M(int(self) + y)
-
-
-def get_sum_resulting_values(lines): # Darkrai469 https://www.reddit.com/r/adventofcode/comments/kfeldk/2020_day_18_solutions/
-    return sum(eval(re.sub(r'(\d+)', r'M(\1)', e).replace('*', '-')) for e in lines)  # get nb cubes
-
-
-def get_sum_resulting_values_part_2(lines):
-    return sum(eval(re.sub(r'(\d+)', r'M(\1)', e).replace('*', '-').replace('+', '*')) for e in lines)
+    return len([*filter(r.fullmatch, ms.split())])  # get nb cubes
 
 
 class Test(unittest.TestCase):
@@ -40,7 +39,7 @@ class Test(unittest.TestCase):
         #lines = input_file("test")  # get input_test
         res = output_file("test_1")  # get output_1
         res = output_file("1")  # get output_1
-        pred = get_sum_resulting_values(lines)  # process
+        pred = get_nb_valid_line(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 
