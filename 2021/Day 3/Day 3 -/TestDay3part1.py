@@ -1,5 +1,4 @@
 import unittest
-from collections import Counter
 
 
 def input_file():
@@ -16,34 +15,33 @@ def output_file():
     return res
 
 
-def get_nb_tree_encounter(lines):
-    width_pattern = len(lines[0])  # get width pattern
-    height_pattern = len(lines)  # get height pattern
-    map = []  # initialize map
-    for line in lines:  # get first pattern
-        line_map = []  # init line
-        for col in line:  # for each column
-            line_map.append(col)  # add a tree or an open path
-        map.append(line_map)  # add a line in the map
-
-    move_list = [(3, 1)]  # intialize moves to do
-
-    # count tree
-    def get_nb_tree_encounter_using_map_and_moves(map, move):  # function to use in first part
-        current_pos = (0, 0)  # start at the top-left
-        nb_tree_encounter = 0  # initialize the count
-        while current_pos[1] < height_pattern - 1:  # browse until the end
-            current_pos = ((current_pos[0] + move[0]) % width_pattern, (current_pos[1] + move[1]))  # add a move
-            if map[current_pos[1]][current_pos[0]] == "#":  # test if there was a tree
-                nb_tree_encounter += 1  # add into the count
-        return nb_tree_encounter  # return the nb of tree encounter
-
-    nb_tree_encounter_product = 1  # initialize the count
-    for move in move_list:  # for each moves in the move list
-        nb_tree_encounter_product *= get_nb_tree_encounter_using_map_and_moves(map,
-                                                                               move)  # get the number of tree encounter and multiply
-
-    return nb_tree_encounter_product  # case it won't work
+def get_power_consumption(lines):
+    bit_dict = {}
+    for i, bit in enumerate(lines[1]):
+        bit_dict[i]= []
+    for line in lines:
+        for i, bit in enumerate(line):
+            bit_dict[i].append(bit)
+    def get_common_bit(bit_dict_raw):
+        c = 0
+        print(bit_dict_raw)
+        for bit in bit_dict_raw:
+            if bit == "1":
+                c += 1
+        return "1" if c > len(bit_dict_raw)/2 else "0"
+    common_bit_gamma = []
+    for i in range(len(lines[1])):
+        common_bit_gamma.append(get_common_bit(bit_dict[i]))
+    common_bit_epsilon = ["1" if bit == "0" else "0" for bit in common_bit_gamma]
+    pc1 = 0
+    pc2 = 0
+    print(common_bit_gamma, common_bit_epsilon)
+    for i, bit in enumerate(common_bit_gamma[::-1]):
+        pc1 += (2**i) * int(bit)
+    for i, bit in enumerate(common_bit_epsilon[::-1]):
+        pc2 += (2**i) * int(bit)
+    print(pc1, pc2)
+    return pc1 * pc2# case it won't work
 
 
 class TestDay3part1(unittest.TestCase):
@@ -51,7 +49,7 @@ class TestDay3part1(unittest.TestCase):
     def test_day_3_part_1(self):
         lines = input_file()  # get input_test
         res = output_file()  # get output_1
-        pred = get_nb_tree_encounter(lines)  # process
+        pred = get_power_consumption(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 

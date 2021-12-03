@@ -16,37 +16,68 @@ def output_file():
     return res
 
 
-def get_nb_tree_encounter_product(lines):
-    width_pattern = len(lines[0])  # get width pattern
-    height_pattern = len(lines)  # get height pattern
-    map = []  # initialize map
-    for line in lines:  # get first pattern
-        line_map = []  # init line
-        for col in line:  #  for each column
-            line_map.append(col)  # add a tree or an open path
-        map.append(line_map)  # add a line in the map
+def get_life_support_rating(lines):
+    def get_common_bit_more(bit_dict_raw):
+        c = 0
+        for bit in bit_dict_raw:
+            if bit == "1":
+                c += 1
+        return "1" if c >= len(bit_dict_raw)/2 else "0"
 
-    move_list = [(1, 1),
-                 (3, 1),
-                 (5, 1),
-                 (7, 1),
-                 (1, 2)]  # intialize moves to do
+    def get_common_bit_fewer(bit_dict_raw):
+        c = 0
+        for bit in bit_dict_raw:
+            if bit == "1":
+                c += 1
+        return "1" if c < len(bit_dict_raw)/2 else "0"
 
-    # count tree
-    def get_nb_tree_encounter_using_map_and_moves(map, move):  # function to use in first part
-        current_pos = (0, 0)  # start at the top-left
-        nb_tree_encounter = 0  # initialize the count
-        while current_pos[1] < height_pattern - 1:  # browse until the end
-            current_pos = ((current_pos[0] + move[0]) % width_pattern, (current_pos[1] + move[1])) # add a move
-            if map[current_pos[1]][current_pos[0]] == "#":  # test if there was a tree
-                nb_tree_encounter += 1  # add into the count
-        return nb_tree_encounter  # return the nb of tree encounter
+    def get_bit_dict(bit_list):
+        bit_dict = {}
+        for i, bit in enumerate(lines[1]):
+            bit_dict[i] = []
+        for dynamic in bit_list:
+            for i, bit in enumerate(dynamic):
+                bit_dict[i].append(bit)
+        return bit_dict
 
-    nb_tree_encounter_product = 1  # initialize the count
-    for move in move_list:  # for each moves in the move list
-        nb_tree_encounter_product *= get_nb_tree_encounter_using_map_and_moves(map, move)  # get the number of tree encounter and multiply
+    dynamic_list = lines
+    res_more = []
+    for i in range(len(lines[1])):
+        common_bit_more = get_common_bit_more(get_bit_dict(dynamic_list)[i])
+        res_more.append(common_bit_more)
+        tmp = []
+        for dynamic in dynamic_list:
+            if dynamic[i] == common_bit_more:
+                tmp.append(dynamic)
+        dynamic_list = tmp
+        if len(dynamic_list) == 1:
+            res_fewer = dynamic_list[0]
+            break
+        #print(dynamic_list)
+    dynamic_list = lines
+    res_fewer = []
+    for i in range(len(lines[1])):
+        common_bit_fewer = get_common_bit_fewer(get_bit_dict(dynamic_list)[i])
+        res_fewer.append(common_bit_fewer)
+        tmp = []
+        for dynamic in dynamic_list:
+            if dynamic[i] == common_bit_fewer:
+                tmp.append(dynamic)
+        dynamic_list = tmp
+        if len(dynamic_list) == 1:
+            res_fewer = dynamic_list[0]
+            break
+        #print(dynamic_list)
+    #print(res_more, res_fewer)
 
-    return nb_tree_encounter_product  # case it won't work
+    pc1 = 0
+    pc2 = 0
+    for i, bit in enumerate(res_more[::-1]):
+        pc1 += (2**i) * int(bit)
+    for i, bit in enumerate(res_fewer[::-1]):
+        pc2 += (2**i) * int(bit)
+    print(pc1, pc2)
+    return pc1 * pc2# case it won't work
 
 
 class TestDay3part2(unittest.TestCase):
@@ -54,7 +85,7 @@ class TestDay3part2(unittest.TestCase):
     def test_day_3_part_2(self):
         lines = input_file()  # get input_test
         res = output_file()  # get output_1
-        pred = get_nb_tree_encounter_product(lines)  # process
+        pred = get_life_support_rating(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 
