@@ -1,5 +1,4 @@
 import unittest
-from collections import Counter
 
 
 def input_file():
@@ -16,40 +15,49 @@ def output_file():
     return res
 
 
-def get_nb_valid_password(lines):
-    def is_valid_password(fields_valid, password_to_check):
-        nb_key_in_password = 0
-        for key in password_to_check:  # for each keys
-            if key in fields_valid:  # is key valid
-                nb_key_in_password += 1  # increment nb key
-        if nb_key_in_password >= len(fields_valid):  # test if nb key is correct
-            return True
-        return False
+def get_final_score(lines):
+    bingo_numbers = [int(col_board_line) for col_board_line in lines[0].split(",") if col_board_line != ""]
+    boards_finder = []
+    boards = []
+    i = 2
+    while True:
+        if i >= len(lines):
+            break
+        board_lines_raw = lines[i:i+5]
 
+        board_lines = [[int(col_board_line) for col_board_line in board_line.split(" ") if col_board_line != ""] for board_line in board_lines_raw]
+        board_columns = [[] for col in board_lines[0]]
+        for board_line in board_lines:
+            for i_col, col in enumerate(board_line):
+                board_columns[i_col].append(col)
+        board_raw = []
+        for board_line in board_lines:
+            for board_col in board_line:
+                board_raw.append(board_col)
+        boards.append(board_raw)
+        #print(board_raw)
+        boards_finder.append([[board_try, 0] for board_try in board_lines + board_columns])
+        i += 6
+    def get_win_board(bingo_numbers, boards_finder):
+        win_board = 0
+        for i_bingo_number, bingo_number in enumerate(bingo_numbers):
+            for i_board, board in enumerate(boards_finder):
+                for i_, _ in enumerate(board):
+                    #print(_)
+                    if bingo_number in _[0]:
+                        boards_finder[i_board][i_][1] += 1
+                        #print(boards_finder[i_board][i_])
+                        if boards_finder[i_board][i_][1] == 5:
+                            return i_board, i_bingo_number
+                        #return sum(boards[i_board][i_][0]) * boards[i_board][i_][0][-1]
 
-    fields_valid = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]  # all key present and valid
-
-    password_to_check = {}  # initialize a password
-    passwords_to_check = []  # initialize password list
-
-    for line in lines:  # for each line
-        for code in line.split(" "):  # get the keys
-            if line == "":  # case it is a blank line
-                passwords_to_check.append(password_to_check)  # add a new password on list
-                password_to_check = {}  # clear the password
-                continue
-            key, value = code.split(":")  # extract key and value
-            password_to_check[key] = value  # add a new value on dict with its key
-    passwords_to_check.append(password_to_check)  # add the last new password on list
-
-    nb_valid_password = 0  # initialize nb valid password
-    #nb_password = 0
-    for password_to_check in passwords_to_check:  # for each passwords
-        #nb_password += 1
-        if is_valid_password(fields_valid, password_to_check):  # check if it is valid
-            nb_valid_password += 1  # increment nb valid password
-    # password last check
-    return nb_valid_password  # return nb of valid password
+    win_board, index_last_bingo_number = get_win_board(bingo_numbers, boards_finder)
+    for bingo_number in bingo_numbers[:index_last_bingo_number+1]:
+        if bingo_number in boards[win_board]:
+            boards[win_board].remove(bingo_number)
+    #print(boards_finder[0])
+    #print(sum(boards[win_board]), bingo_numbers[index_last_bingo_number])
+    return sum(boards[win_board]) * bingo_numbers[index_last_bingo_number]
 
 
 class TestDay4part1(unittest.TestCase):
@@ -57,7 +65,7 @@ class TestDay4part1(unittest.TestCase):
     def test_day_4_part_1(self):
         lines = input_file()  # get input_test
         res = output_file()  # get output_1
-        pred = get_nb_valid_password(lines)  # process
+        pred = get_final_score(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 

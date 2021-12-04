@@ -16,89 +16,70 @@ def output_file():
     return res
 
 
-def get_nb_valid_password(lines):
-    def is_digit_interval(min, max, nb_digit, key, password_to_check):
-        if min <= int(password_to_check[key]) <= max and len(password_to_check[key]) == nb_digit and password_to_check[key].isnumeric():  # check rule with interval min max and length of digits
-            return True
-        return False
+def get_final_score(lines):
+    bingo_numbers = [int(col_board_line) for col_board_line in lines[0].split(",") if col_board_line != ""]
+    boards_finder = []
+    boards = []
+    i = 2
+    while True:
+        if i >= len(lines):
+            break
+        board_lines_raw = lines[i:i+5]
 
-    def is_hgt_interval(min, max, unit, key, password_to_check):
-        if password_to_check[key][-2:] == unit:  # check unit of height
-            if min <= int(password_to_check[key][:-2]) <= max:  # check interval of height
-                return True
-            return False
-        return False
+        board_lines = [[int(col_board_line) for col_board_line in board_line.split(" ") if col_board_line != ""] for board_line in board_lines_raw]
+        board_columns = [[] for col in board_lines[0]]
+        for board_line in board_lines:
+            for i_col, col in enumerate(board_line):
+                board_columns[i_col].append(col)
+        board_raw = []
+        for board_line in board_lines:
+            for board_col in board_line:
+                board_raw.append(board_col)
+        boards.append(board_raw)
+        #print(board_raw)
+        boards_finder.append([[board_try, 0] for board_try in board_lines + board_columns])
+        i += 6
 
-    def is_valid_string(length, valid_chars, password):
-        if len(password) == length:  # check length of chars
-            for char in password:
-                if char not in valid_chars:  # check if each char are in valid chars
-                    return False
-            return True
-        return False
+    def get_win_board(bingo_numbers, boards_finder):
+        win_board = 0
+        for i_bingo_number, bingo_number in enumerate(bingo_numbers):
+            for i_board, board in enumerate(boards_finder):
+                for i_, _ in enumerate(board):
+                    #print(_)
+                    if bingo_number in _[0]:
+                        boards_finder[i_board][i_][1] += 1
+                        #print(boards_finder[i_board][i_])
+                        if boards_finder[i_board][i_][1] == 5:
+                            return i_board, i_bingo_number
+                        #return sum(boards[i_board][i_][0]) * boards[i_board][i_][0][-1]
 
-    def is_valid_integrity(key, password_to_check):
-        if key == "byr":
-            return is_digit_interval(192, 2002, 4, key, password_to_check)  # byr (Birth Year) - four digits; at least 1920 and at most 2002
-        if key == "iyr":
-            return is_digit_interval(2010, 2020, 4, key, password_to_check)  # iyr (Issue Year) - four digits; at least 2010 and at most 2020
-        if key == "eyr":
-            return is_digit_interval(2020, 2030, 4, key, password_to_check)  # eyr (Expiration Year) - four digits; at least 2020 and at most 2030
-        if key == "hgt":
-            if password_to_check[key][-2:] == "cm":
-                return is_hgt_interval(150, 193, "cm", key, password_to_check)  # If cm, the number must be at least 150 and at most 193
-            elif password_to_check[key][-2:] == "in":
-                return is_hgt_interval(59, 76, "in", key, password_to_check)  # If in, the number must be at least 59 and at most 76
-            else:
-                return False
-        if key == "hcl":
-            if password_to_check[key][0] == "#":
-                return is_valid_string(6, "0123456789abcdef", password_to_check[key][1:])  # hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f
-            return False
-        if key == "ecl":
-            if password_to_check[key] in ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]:  # ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth
-                return True
-            return False
-        if key == "pid":
-            return is_valid_string(9, "0123456789", password_to_check[key])  # pid (Passport ID) - a nine-digit number, including leading zeroes
-        if key == "cid":  # cid (Country ID) - ignored, missing or not
-            return True
+    for j in range(len(boards)):
+        win_board, index_last_bingo_number = get_win_board(bingo_numbers, boards_finder)
+        boards_finder.remove(boards_finder[win_board])
+        boards.remove(boards[win_board])
+        #print(boards_finder)
+        # refresh counters
+        #boards_finder = [[[_, 0] for _ in board_finder] for board_finder in boards_finder]
+        boards_finder = [[[_[0], 0] for _ in board_finder] for board_finder in boards_finder]
+        #print("hola", boards_finder)
+        if len(boards_finder) == 1:
+            #print(boards_finder)
 
-    def is_valid_password(fields_valid, password_to_check):
-        nb_key_in_password = 0  # initialize nb key of password present and valid
-        for key in password_to_check:  # check each key
-            if not is_valid_integrity(key, password_to_check): # check rules before count
-                return False
-            if key in fields_valid:  # increment in the case the key and value is valid
-                nb_key_in_password += 1
+            #print(boards_finder)
+            win_board, index_last_bingo_number = get_win_board(bingo_numbers, boards_finder)
+            #print(boards_finder)
+            #print(bingo_numbers)
+            for bingo_number in bingo_numbers[:index_last_bingo_number+1]:
+                if bingo_number in boards[0]:
+                   boards[0].remove(bingo_number)
+            return sum(boards[0]) * bingo_numbers[index_last_bingo_number]
 
-        if nb_key_in_password == len(fields_valid):  # check if there was all key present and valid, low need to be optimize
-            return True
-        return False
-
-    fields_valid = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]  # all key present and valid
-
-    password_to_check = {}  # initialize a password
-    passwords_to_check = []  # initialize password list
-
-    for line in lines:  # for each line
-        for code in line.split(" "):  # get the keys
-            if line == "":  # case it is a blank line
-                passwords_to_check.append(password_to_check)  # add a new password on list
-                password_to_check = {}  # clear the password
-                continue
-            key, value = code.split(":")  # extract key and value
-            password_to_check[key] = value  # add a new value on dict with its key
-    passwords_to_check.append(password_to_check)  # add the last new password on list
-
-    nb_valid_password = 0  # initialize nb valid password
-    #nb_password = 0
-    for password_to_check in passwords_to_check:  # for each passwords
-        #nb_password += 1
-        if is_valid_password(fields_valid, password_to_check):  # check if it is valid
-            nb_valid_password += 1  # increment nb valid password
-    # password last check
-    return nb_valid_password  # return nb of valid password
+    #for bingo_number in bingo_numbers[:index_last_bingo_number+1]:
+    #    if bingo_number in boards[win_board]:
+    #        boards[win_board].remove(bingo_number)
+    #print(boards_finder[0])
+    #print(sum(boards[win_board]), bingo_numbers[index_last_bingo_number])
+    return 0
 
 
 class TestDay4part2(unittest.TestCase):
@@ -106,7 +87,7 @@ class TestDay4part2(unittest.TestCase):
     def test_day_4_part_2(self):
         lines = input_file()  # get input_test
         res = output_file()  # get output_1
-        pred = get_nb_valid_password(lines)  # process
+        pred = get_final_score(lines)  # process
         print(pred)  # print
         assert(str(pred) == res[0])  # check
 

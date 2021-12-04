@@ -1,4 +1,4 @@
-var input = ";
+var input = "";
 var output = "692916";
 
 function find_sum_2020(lines) {
